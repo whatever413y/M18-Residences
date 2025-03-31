@@ -75,89 +75,111 @@ class HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildGraph() {
-    if (electricityReadings == null)
-     { 
-      return Center(child: CircularProgressIndicator());
-     }
+  if (electricityReadings == null) { 
+    return Center(child: CircularProgressIndicator());
+  }
 
-    electricityReadings!.sort(
-      (a, b) => b["created_at"].compareTo(a["created_at"]),
-    );
-    double maxReading =
-        electricityReadings!
-            .map((e) => e["curr_reading"])
-            .reduce((a, b) => a > b ? a : b)
-            .toDouble();
-    double yMax = ((maxReading / 50).ceil() * 50).toDouble();
+  electricityReadings!.sort(
+    (a, b) => b["created_at"].compareTo(a["created_at"]),
+  );
+  
+  double maxReading = electricityReadings!
+      .map((e) => e["curr_reading"])
+      .reduce((a, b) => a > b ? a : b)
+      .toDouble();
+  
+  double yMax = ((maxReading / 50).ceil() * 50).toDouble();
 
-    return SizedBox(
-      height: 250,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: EdgeInsets.only(top: 25.0),
-          child: SizedBox(
-            width: electricityReadings!.length * 60.0,
-            child: BarChart(
-              BarChartData(
-                maxY: yMax,
-                minY: 0,
-                barGroups:
-                    electricityReadings!.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      double value = entry.value["curr_reading"].toDouble();
-                      return BarChartGroupData(
-                        x: index,
-                        barRods: [
-                          BarChartRodData(
-                            toY: value,
-                            color: Colors.blue,
-                            width: 20,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                titlesData: FlTitlesData(
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 60,
-                      interval: yMax / 4,
-                      getTitlesWidget:
-                          (value, meta) => Text("${value.toInt()} kWh"),
+  return SizedBox(
+    height: 250,
+    child: SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Padding(
+        padding: EdgeInsets.only(top: 25.0),
+        child: SizedBox(
+          width: electricityReadings!.length * 60.0,
+          child: BarChart(
+            BarChartData(
+              maxY: yMax,
+              minY: 0,
+              barGroups: electricityReadings!.asMap().entries.map((entry) {
+                int index = entry.key;
+                double value = entry.value["curr_reading"].toDouble();
+                
+                return BarChartGroupData(
+                  x: index,
+                  barRods: [
+                    BarChartRodData(
+                      toY: value,
+                      color: Colors.blue,
+                      width: 20,
+                      borderRadius: BorderRadius.circular(4),
+                      backDrawRodData: BackgroundBarChartRodData(
+                        show: true,
+                        toY: yMax,
+                        color: Colors.grey.withOpacity(0.2),
+                      ),
                     ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        int index = value.toInt();
-                        if (index >= 0 && index < electricityReadings!.length) {
-                          DateTime date =
-                              electricityReadings![index]["created_at"];
-                          return Text(DateFormat("yyyyMM").format(date));
-                        }
-                        return Text('');
-                      },
-                    ),
+                  ],
+                );
+              }).toList(),
+              titlesData: FlTitlesData(
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 60,
+                    interval: yMax / 4,
+                    getTitlesWidget: (value, meta) => Text("${value.toInt()} kWh"),
                   ),
                 ),
-                borderData: FlBorderData(show: true),
-                gridData: FlGridData(show: false),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      int index = value.toInt();
+                      if (index >= 0 && index < electricityReadings!.length) {
+                        DateTime date = electricityReadings![index]["created_at"];
+                        return Text(DateFormat("yyyyMM").format(date));
+                      }
+                      return Text('');
+                    },
+                  ),
+                ),
+              ),
+              borderData: FlBorderData(show: true),
+              gridData: FlGridData(show: false),
+              barTouchData: BarTouchData(
+                enabled: true,
+                touchTooltipData: BarTouchTooltipData(
+                  fitInsideHorizontally: true, 
+                  fitInsideVertically: true, 
+                  tooltipMargin: 8,
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                    return BarTooltipItem(
+                      "${rod.toY.toStringAsFixed(1)} kWh",
+                      TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    );
+                  },
+                ),
+                touchCallback: (FlTouchEvent event, barTouchResponse) {
+                  if (event is FlTapUpEvent && barTouchResponse != null) {
+                  }
+                },
               ),
             ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildBillingHistory() {
     if (billingHistory == null)
