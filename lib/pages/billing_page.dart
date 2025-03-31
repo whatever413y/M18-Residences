@@ -3,10 +3,10 @@ import 'package:intl/intl.dart';
 
 class BillingPage extends StatefulWidget {
   @override
-  _BillingPageState createState() => _BillingPageState();
+  BillingPageState createState() => BillingPageState();
 }
 
-class _BillingPageState extends State<BillingPage> {
+class BillingPageState extends State<BillingPage> {
   Map<String, dynamic>? latestBill;
 
   @override
@@ -40,7 +40,13 @@ class _BillingPageState extends State<BillingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Billing Statement')),
+      appBar: AppBar(
+        title: Text(
+          'Billing Statement',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue.shade800,
+      ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: latestBill == null
@@ -54,35 +60,41 @@ class _BillingPageState extends State<BillingPage> {
     final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱');
 
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               "Latest Bill",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
             ),
-            Divider(),
+            Divider(thickness: 1.2),
             _buildBillItem("Room Charges", latestBill!["room_charges"], currencyFormat),
             _buildBillItem("Electric Charges", latestBill!["electric_charges"], currencyFormat),
             _buildBillItem("Additional Charges", latestBill!["additional_charges"], currencyFormat),
+            
             if (latestBill!["additional_description"] != null)
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   "Note: ${latestBill!["additional_description"]}",
-                  style: TextStyle(fontStyle: FontStyle.italic),
+                  style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey.shade700),
                 ),
               ),
-            Divider(),
+              
+            Divider(thickness: 1.2),
             _buildBillItem("Total Amount", latestBill!["total_amount"], currencyFormat, isTotal: true),
-            SizedBox(height: 10),
-            Text(
-              "Date Posted: ${DateFormat.yMMMMd().format(latestBill!["created_at"])}",
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+            SizedBox(height: 15),
+            
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                "Date Posted: ${DateFormat.yMMMMd().format(latestBill!["created_at"])}",
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
             ),
           ],
         ),
@@ -92,12 +104,26 @@ class _BillingPageState extends State<BillingPage> {
 
   Widget _buildBillItem(String label, double amount, NumberFormat currencyFormat, {bool isTotal = false}) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: isTotal ? 18 : 16, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal)),
-          Text(currencyFormat.format(amount), style: TextStyle(fontSize: isTotal ? 18 : 16, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: isTotal ? 18 : 16,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
+              color: isTotal ? Colors.blue.shade900 : Colors.black87,
+            ),
+          ),
+          Text(
+            currencyFormat.format(amount),
+            style: TextStyle(
+              fontSize: isTotal ? 18 : 16,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
+              color: isTotal ? Colors.blue.shade900 : Colors.black87,
+            ),
+          ),
         ],
       ),
     );

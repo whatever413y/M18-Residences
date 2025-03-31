@@ -22,36 +22,67 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.inputText)),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildSquareButton("Current Bill", Icons.receipt, BillingPage()),
-            SizedBox(height: 20),
-            _buildSquareButton("Billing History", Icons.history, HistoryPage()),
-          ],
+      appBar: AppBar(
+        title: Text(
+          widget.inputText,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue.shade800,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade900, Colors.blue.shade500],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildSquareButton("Current Bill", Icons.receipt, BillingPage()),
+                SizedBox(height: 20),
+                _buildSquareButton("Billing History", Icons.history, HistoryPage()),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildSquareButton(String text, IconData icon, Widget page) {
-    return ElevatedButton(
-      onPressed: () => _navigateToPage(page),
-      style: ElevatedButton.styleFrom(
+    return GestureDetector(
+      onTap: () => _navigateToPage(page),
+      child: Container(
+        width: double.infinity,
         padding: EdgeInsets.all(24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        minimumSize: Size(double.infinity, 120),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 40),
-          SizedBox(height: 10),
-          Text(text, textAlign: TextAlign.center),
-        ],
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 50, color: Colors.blue.shade800),
+            SizedBox(height: 10),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
     );
   }
