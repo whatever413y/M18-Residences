@@ -11,6 +11,9 @@ class HistoryPage extends StatefulWidget {
 class HistoryPageState extends State<HistoryPage> {
   List<Map<String, dynamic>>? billingHistory;
   List<Map<String, dynamic>>? electricityReadings;
+  List<Map<String, dynamic>>? filteredReadings;
+
+  int? _selectedYear;
 
   @override
   void initState() {
@@ -42,13 +45,16 @@ class HistoryPageState extends State<HistoryPage> {
 
   Future<void> _fetchElectricityReadings() async {
     await Future.delayed(Duration(seconds: 2));
-    electricityReadings = List.generate(
-      12,
-      (index) => {
-        "curr_reading": 300 + (index * 20),
-        "created_at": DateTime(2024, index + 1, 1),
-      },
-    );
+
+    electricityReadings = [
+      {"curr_reading": 300, "created_at": DateTime(2024, 1, 1)},
+      {"curr_reading": 320, "created_at": DateTime(2024, 2, 1)},
+      {"curr_reading": 300, "created_at": DateTime(2024, 1, 1)},
+      {"curr_reading": 290, "created_at": DateTime(2024, 2, 1)},
+      {"curr_reading": 340, "created_at": DateTime(2023, 3, 1)},
+      {"curr_reading": 360, "created_at": DateTime(2021, 4, 1)},
+    ];
+
     setState(() {});
   }
 
@@ -56,30 +62,62 @@ class HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: "Billing History"),
-      body: Padding(
-        padding: EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            _buildGraph(),
-            SizedBox(height: 10),
-            Expanded(child: _buildBillingHistory()),
-          ],
-        ),
+      body: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    if (electricityReadings == null) {
+      return Center(child: CircularProgressIndicator());
+    }
+    return Padding(
+      padding: EdgeInsets.all(10.0),
+      child: Column(
+        children: [
+          _buildDropdownYearSelector(context),
+          SizedBox(height: 10),
+          _buildGraph(context),
+          SizedBox(height: 10),
+          Expanded(child: _buildBillingHistory()),
+        ],
       ),
     );
   }
 
-  Widget _buildGraph() {
-    if (electricityReadings == null) {
-      return Center(child: CircularProgressIndicator());
-    }
+  Widget _buildDropdownYearSelector(BuildContext context) {
+    final years =
+        electricityReadings!.map((e) => e["created_at"].year).toSet().toList()
+          ..sort((a, b) => b.compareTo(a));
 
-    electricityReadings!.sort(
+    _selectedYear ??=
+        years.contains(DateTime.now().year) ? DateTime.now().year : years.first;
+
+    return DropdownButton<int>(
+      value: _selectedYear,
+      onChanged: (year) {
+        setState(() {
+          _selectedYear = year;
+        });
+      },
+      items:
+          years.map((year) {
+            return DropdownMenuItem<int>(value: year, child: Text('$year'));
+          }).toList(),
+    );
+  }
+
+  Widget _buildGraph(BuildContext context) {
+    filteredReadings =
+        electricityReadings
+            ?.where((reading) => reading["created_at"].year == _selectedYear)
+            .toList();
+
+    filteredReadings!.sort(
       (a, b) => b["created_at"].compareTo(a["created_at"]),
     );
 
     double maxReading =
-        electricityReadings!
+        filteredReadings!
             .map((e) => e["curr_reading"])
             .reduce((a, b) => a > b ? a : b)
             .toDouble();
@@ -182,9 +220,6 @@ class HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildBillingHistory() {
-    if (billingHistory == null) {
-      return Center(child: CircularProgressIndicator());
-    }
     if (billingHistory!.isEmpty) {
       return Center(child: Text("No billing history available."));
     }
