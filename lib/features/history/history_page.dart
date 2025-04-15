@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:rental_management_system_flutter/features/history/widgets/electric_consumption_bar_chart.dart';
 import 'package:rental_management_system_flutter/utils/widgets/custom_app_bar.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -11,7 +11,6 @@ class HistoryPage extends StatefulWidget {
 class HistoryPageState extends State<HistoryPage> {
   List<Map<String, dynamic>>? billingHistory;
   List<Map<String, dynamic>>? electricityReadings;
-  List<Map<String, dynamic>>? filteredReadings;
 
   int? _selectedYear;
 
@@ -49,13 +48,40 @@ class HistoryPageState extends State<HistoryPage> {
     electricityReadings = [
       {"curr_reading": 300, "created_at": DateTime(2024, 1, 1)},
       {"curr_reading": 320, "created_at": DateTime(2024, 2, 1)},
-      {"curr_reading": 300, "created_at": DateTime(2024, 1, 1)},
-      {"curr_reading": 290, "created_at": DateTime(2024, 2, 1)},
+      {"curr_reading": 300, "created_at": DateTime(2024, 3, 1)},
+      {"curr_reading": 290, "created_at": DateTime(2024, 4, 1)},
+      {"curr_reading": 290, "created_at": DateTime(2024, 5, 1)},
+      {"curr_reading": 290, "created_at": DateTime(2024, 8, 1)},
+      {"curr_reading": 290, "created_at": DateTime(2024, 9, 1)},
+      {"curr_reading": 290, "created_at": DateTime(2024, 10, 1)},
+      {"curr_reading": 290, "created_at": DateTime(2024, 11, 1)},
+      {"curr_reading": 290, "created_at": DateTime(2024, 12, 1)},
       {"curr_reading": 340, "created_at": DateTime(2023, 3, 1)},
       {"curr_reading": 360, "created_at": DateTime(2021, 4, 1)},
     ];
 
     setState(() {});
+  }
+
+  List<Map<String, dynamic>> getCompleteReadingsForYear({
+    required int selectedYear,
+    required List<Map<String, dynamic>> readings,
+  }) {
+    return List.generate(12, (index) {
+      final month = index + 1;
+      final existingReading = readings.firstWhere(
+        (reading) =>
+            (reading["created_at"] as DateTime).year == selectedYear &&
+            (reading["created_at"] as DateTime).month == month,
+        orElse: () => {},
+      );
+
+      if (existingReading.isNotEmpty) {
+        return existingReading;
+      } else {
+        return {"created_at": DateTime(selectedYear, month), "curr_reading": 0};
+      }
+    });
   }
 
   @override
@@ -75,10 +101,9 @@ class HistoryPageState extends State<HistoryPage> {
       child: Column(
         children: [
           _buildDropdownYearSelector(context),
-          SizedBox(height: 10),
           _buildGraph(context),
           SizedBox(height: 10),
-          Expanded(child: _buildBillingHistory()),
+          Expanded(child: _buildBillingHistory(context)),
         ],
       ),
     );
@@ -92,28 +117,66 @@ class HistoryPageState extends State<HistoryPage> {
     _selectedYear ??=
         years.contains(DateTime.now().year) ? DateTime.now().year : years.first;
 
-    return DropdownButton<int>(
-      value: _selectedYear,
-      onChanged: (year) {
-        setState(() {
-          _selectedYear = year;
-        });
-      },
-      items:
-          years.map((year) {
-            return DropdownMenuItem<int>(value: year, child: Text('$year'));
-          }).toList(),
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<int>(
+            value: _selectedYear,
+            onChanged: (year) {
+              setState(() {
+                _selectedYear = year;
+              });
+            },
+            style: const TextStyle(fontSize: 14, color: Colors.black),
+            icon: const Icon(Icons.keyboard_arrow_down),
+            items:
+                years.map((year) {
+                  return DropdownMenuItem<int>(
+                    value: year,
+                    child: Text('$year'),
+                  );
+                }).toList(),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildGraph(BuildContext context) {
-    filteredReadings =
-        electricityReadings
-            ?.where((reading) => reading["created_at"].year == _selectedYear)
-            .toList();
+    return SizedBox(
+      height: 250,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Padding(
+          padding: EdgeInsets.only(top: 5.0),
+          child: SizedBox(width: 500, child: _buildBarChart(context)),
+        ),
+      ),
+    );
+  }
 
-    filteredReadings!.sort(
-      (a, b) => b["created_at"].compareTo(a["created_at"]),
+  Widget _buildBarChart(BuildContext context) {
+    final filteredReadings =
+        electricityReadings
+            ?.where(
+              (reading) =>
+                  (reading["created_at"] as DateTime).year == _selectedYear,
+            )
+            .toList();
+    final completeReadings = getCompleteReadingsForYear(
+      selectedYear: _selectedYear!,
+      readings: electricityReadings!,
+    );
+
+    completeReadings.sort(
+      (a, b) =>
+          (b["created_at"] as DateTime).compareTo(a["created_at"] as DateTime),
     );
 
     double maxReading =
@@ -124,102 +187,10 @@ class HistoryPageState extends State<HistoryPage> {
 
     double yMax = ((maxReading / 50).ceil() * 50).toDouble();
 
-    return SizedBox(
-      height: 250,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: EdgeInsets.only(top: 25.0),
-          child: SizedBox(
-            width: electricityReadings!.length * 60.0,
-            child: BarChart(
-              BarChartData(
-                maxY: yMax,
-                minY: 0,
-                barGroups:
-                    electricityReadings!.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      double value = entry.value["curr_reading"].toDouble();
-
-                      return BarChartGroupData(
-                        x: index,
-                        barRods: [
-                          BarChartRodData(
-                            toY: value,
-                            color: Colors.blue,
-                            width: 20,
-                            borderRadius: BorderRadius.circular(4),
-                            backDrawRodData: BackgroundBarChartRodData(
-                              show: true,
-                              toY: yMax,
-                              color: Colors.grey.withOpacity(0.2),
-                            ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                titlesData: FlTitlesData(
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 60,
-                      interval: yMax / 4,
-                      getTitlesWidget:
-                          (value, meta) => Text("${value.toInt()} kWh"),
-                    ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        int index = value.toInt();
-                        if (index >= 0 && index < electricityReadings!.length) {
-                          DateTime date =
-                              electricityReadings![index]["created_at"];
-                          return Text(DateFormat("yyyyMM").format(date));
-                        }
-                        return Text('');
-                      },
-                    ),
-                  ),
-                ),
-                borderData: FlBorderData(show: true),
-                gridData: FlGridData(show: false),
-                barTouchData: BarTouchData(
-                  enabled: true,
-                  touchTooltipData: BarTouchTooltipData(
-                    fitInsideHorizontally: true,
-                    fitInsideVertically: true,
-                    tooltipMargin: 8,
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      return BarTooltipItem(
-                        "${rod.toY.toStringAsFixed(1)} kWh",
-                        TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
-                  ),
-                  touchCallback: (FlTouchEvent event, barTouchResponse) {
-                    if (event is FlTapUpEvent && barTouchResponse != null) {}
-                  },
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+    return ElectricConsumptionBarChart(completeReadings: completeReadings, yMax: yMax);
   }
 
-  Widget _buildBillingHistory() {
+  Widget _buildBillingHistory(BuildContext context) {
     if (billingHistory!.isEmpty) {
       return Center(child: Text("No billing history available."));
     }
@@ -242,7 +213,7 @@ class HistoryPageState extends State<HistoryPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Bill Date: ${DateFormat.yMMMMd().format(bill["created_at"])}",
+                  "Posting Date: ${DateFormat.yMMMMd().format(bill["created_at"])}",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
