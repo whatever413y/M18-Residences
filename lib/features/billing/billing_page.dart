@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:rental_management_system_flutter/utils/widgets/custom_app_bar.dart';
 
 class BillingPage extends StatefulWidget {
   @override
@@ -40,18 +41,13 @@ class BillingPageState extends State<BillingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Billing Statement',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blue.shade800,
-      ),
+      appBar: CustomAppBar(title: "Billing Statement"),
       body: Padding(
         padding: EdgeInsets.all(16.0),
-        child: latestBill == null
-            ? Center(child: CircularProgressIndicator()) 
-            : _buildBillCard(),
+        child:
+            latestBill == null
+                ? Center(child: CircularProgressIndicator())
+                : _buildBillCard(),
       ),
     );
   }
@@ -69,31 +65,56 @@ class BillingPageState extends State<BillingPage> {
           children: [
             Text(
               "Latest Bill",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue.shade900,
+              ),
             ),
             Divider(thickness: 1.2),
-            _buildBillItem("Room Charges", latestBill!["room_charges"], currencyFormat),
-            _buildBillItem("Electric Charges", latestBill!["electric_charges"], currencyFormat),
-            _buildBillItem("Additional Charges", latestBill!["additional_charges"], currencyFormat),
-            
+            _buildBillItem(
+              "Room Charges",
+              latestBill!["room_charges"],
+              currencyFormat,
+            ),
+            _buildBillItem(
+              "Electric Charges",
+              latestBill!["electric_charges"],
+              currencyFormat,
+            ),
+            _buildBillItem(
+              "Additional Charges",
+              latestBill!["additional_charges"],
+              currencyFormat,
+            ),
+
             if (latestBill!["additional_description"] != null)
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   "Note: ${latestBill!["additional_description"]}",
-                  style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey.shade700),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey.shade700,
+                  ),
                 ),
               ),
-              
+
             Divider(thickness: 1.2),
-            _buildBillItem("Total Amount", latestBill!["total_amount"], currencyFormat, isTotal: true),
+            _buildBillItem(
+              "Total Amount",
+              latestBill!["total_amount"],
+              currencyFormat,
+              isTotal: true,
+            ),
             SizedBox(height: 15),
-            
+
             Align(
               alignment: Alignment.centerRight,
               child: Text(
                 "Date Posted: ${DateFormat.yMMMMd().format(latestBill!["created_at"])}",
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(fontSize: 18, color: Colors.grey),
               ),
             ),
           ],
@@ -102,7 +123,12 @@ class BillingPageState extends State<BillingPage> {
     );
   }
 
-  Widget _buildBillItem(String label, double amount, NumberFormat currencyFormat, {bool isTotal = false}) {
+  Widget _buildBillItem(
+    String label,
+    double amount,
+    NumberFormat currencyFormat, {
+    bool isTotal = false,
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -111,7 +137,7 @@ class BillingPageState extends State<BillingPage> {
           Text(
             label,
             style: TextStyle(
-              fontSize: isTotal ? 18 : 16,
+              fontSize: isTotal ? 20 : 18,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
               color: isTotal ? Colors.blue.shade900 : Colors.black87,
             ),
@@ -119,7 +145,7 @@ class BillingPageState extends State<BillingPage> {
           Text(
             currencyFormat.format(amount),
             style: TextStyle(
-              fontSize: isTotal ? 18 : 16,
+              fontSize: isTotal ? 20 : 18,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
               color: isTotal ? Colors.blue.shade900 : Colors.black87,
             ),

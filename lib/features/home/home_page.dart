@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rental_management_system_flutter/utils/widgets/custom_app_bar.dart';
 import '../billing/billing_page.dart';
 import '../history/history_page.dart';
 
@@ -18,27 +19,9 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(
-        "Home",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 24,
-          color: Colors.white,
-        ),
-      ),
-      backgroundColor: Colors.blue.shade900,
-      centerTitle: true,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () {
-          Navigator.pop(context);
-        },
-      ),
+    return Scaffold(
+      appBar: CustomAppBar(title: "Home"),
+      body: _buildBody(context),
     );
   }
 
