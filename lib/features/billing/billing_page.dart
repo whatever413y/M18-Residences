@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:rental_management_system_flutter/utils/widgets/custom_app_bar.dart';
+import 'package:rental_management_system_flutter/utils/custom_app_bar.dart';
 
 class BillingPage extends StatefulWidget {
   @override

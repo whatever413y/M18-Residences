@@ -1,10 +1,11 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:rental_management_system_flutter/models/reading.dart';
 
 class ElectricConsumptionBarChart extends StatelessWidget {
-  final List<Map<String, dynamic>> completeReadings;
-  final double yMax;
+  final List<Reading> completeReadings;
+  final int yMax;
 
   const ElectricConsumptionBarChart({
     super.key,
@@ -16,25 +17,25 @@ class ElectricConsumptionBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return BarChart(
       BarChartData(
-        maxY: yMax,
+        maxY: yMax.toDouble(),
         minY: 0,
         barGroups:
             completeReadings.asMap().entries.map((entry) {
               int index = entry.key;
-              double value = entry.value["curr_reading"].toDouble();
+              int value = entry.value.currReading;
 
               return BarChartGroupData(
                 x: index,
                 barRods: [
                   BarChartRodData(
-                    toY: value,
+                    toY: value.toDouble(),
                     color: Colors.blue,
                     width: 15,
                     borderRadius: BorderRadius.circular(4),
                     backDrawRodData: BackgroundBarChartRodData(
                       show: true,
-                      toY: yMax,
-                      color: Colors.grey.withOpacity(0.2),
+                      toY: yMax.toDouble(),
+                      color: Colors.grey.withValues(alpha: 0.2),
                     ),
                   ),
                 ],
@@ -57,7 +58,7 @@ class ElectricConsumptionBarChart extends StatelessWidget {
               getTitlesWidget: (value, meta) {
                 int index = value.toInt();
                 if (index >= 0 && index < completeReadings.length) {
-                  DateTime date = completeReadings[index]["created_at"];
+                  DateTime date = completeReadings[index].createdAt;
                   return Text(DateFormat("MMM").format(date).toUpperCase());
                 }
                 return Text('');
