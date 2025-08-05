@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:rental_management_system_flutter/bloc/billing_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/billing_event.dart';
+import 'package:rental_management_system_flutter/bloc/billing_state.dart';
 import 'package:rental_management_system_flutter/features/history/widgets/electric_consumption_bar_chart.dart';
 import 'package:rental_management_system_flutter/models/billing.dart';
 import 'package:rental_management_system_flutter/models/reading.dart';
+import 'package:rental_management_system_flutter/theme.dart';
 import 'package:rental_management_system_flutter/utils/custom_app_bar.dart';
-import 'package:rental_management_system_flutter/services/billing_service.dart';
 import 'package:rental_management_system_flutter/utils/custom_dropdown_form.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -13,42 +17,17 @@ class HistoryPage extends StatefulWidget {
 }
 
 class HistoryPageState extends State<HistoryPage> {
-  final BillingService billingService = BillingService();
+  late BillingBloc billingBloc;
   List<Bill>? billingHistory;
   List<Reading>? electricityReadings;
-
   int? _selectedYear;
+  final int tenantId = 7; // Example tenant ID, replace with actual tenant ID
 
   @override
   void initState() {
     super.initState();
-    _fetchBillingHistory();
-  }
-
-  Future<void> _fetchBillingHistory() async {
-    try {
-      int tenantId = 7;
-      List<Bill> bills = await billingService.getAllByTenantId(tenantId);
-
-      billingHistory = bills;
-      electricityReadings =
-          bills.map((bill) {
-            return Reading(
-              id: bill.id,
-              prevReading: bill.prevReading,
-              currReading: bill.currReading,
-              consumption: bill.consumption,
-              createdAt: bill.createdAt,
-            );
-          }).toList();
-
-      setState(() {});
-    } catch (e) {
-      print('Failed to fetch billing history: $e');
-      billingHistory = [];
-      electricityReadings = [];
-      setState(() {});
-    }
+    billingBloc = context.read<BillingBloc>();
+    billingBloc.add(FetchBillingByTenantId(tenantId));
   }
 
   List<Reading> getCompleteReadingsForYear({
@@ -70,31 +49,96 @@ class HistoryPageState extends State<HistoryPage> {
               createdAt: DateTime(selectedYear, month),
             ),
       );
-
       return existingReading;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(title: "Billing History"),
-      body: _buildBody(context),
+    final theme = AppTheme.lightTheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final bool isWideScreen = screenWidth >= 800;
+
+    return Theme(
+      data: theme,
+      child: Scaffold(
+        appBar: CustomAppBar(title: "Billing History"),
+        body: BlocBuilder<BillingBloc, BillingState>(
+          builder: (context, state) {
+            if (state is BillingLoading) {
+              return Center(child: CircularProgressIndicator());
+            } else if (state is BillingError) {
+              return _buildError(state.message);
+            } else if (state is BillingLoaded) {
+              billingHistory = state.bills;
+
+              electricityReadings =
+                  billingHistory!.map((bill) {
+                    return Reading(
+                      id: bill.id,
+                      prevReading: bill.prevReading,
+                      currReading: bill.currReading,
+                      consumption: bill.consumption,
+                      createdAt: bill.createdAt,
+                    );
+                  }).toList();
+
+              _selectedYear ??=
+                  electricityReadings!.any(
+                        (r) => r.createdAt.year == DateTime.now().year,
+                      )
+                      ? DateTime.now().year
+                      : electricityReadings!.first.createdAt.year;
+
+              return Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWideScreen ? 40 : 16,
+                  vertical: 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: SizedBox(
+                        width: isWideScreen ? 150 : 120,
+                        child: _buildDropdownYearSelector(context),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    _buildGraph(context),
+                    SizedBox(height: 16),
+                    Expanded(child: _buildBillingHistory(context)),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox();
+          },
+        ),
+      ),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
-    if (electricityReadings == null) {
-      return Center(child: CircularProgressIndicator());
-    }
-    return Padding(
-      padding: EdgeInsets.all(10.0),
+  Widget _buildError(String message) {
+    return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildDropdownYearSelector(context),
-          _buildGraph(context),
-          SizedBox(height: 10),
-          Expanded(child: _buildBillingHistory(context)),
+          Text(
+            message,
+            style: const TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () {
+              context.read<BillingBloc>().add(FetchBillingByTenantId(tenantId));
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text('Refresh'),
+          ),
         ],
       ),
     );
@@ -104,15 +148,13 @@ class HistoryPageState extends State<HistoryPage> {
     final years =
         electricityReadings!.map((e) => e.createdAt.year).toSet().toList()
           ..sort((a, b) => b.compareTo(a));
-    _selectedYear ??=
-        years.contains(DateTime.now().year) ? DateTime.now().year : years.first;
 
     return Align(
       alignment: Alignment.topRight,
       child: Padding(
         padding: const EdgeInsets.only(right: 12.0, top: 8.0),
         child: SizedBox(
-          width: 100,
+          width: 120,
           child: CustomDropdownForm<int>(
             label: 'Year',
             value: _selectedYear,
@@ -137,13 +179,20 @@ class HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildGraph(BuildContext context) {
-    return SizedBox(
-      height: 250,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: EdgeInsets.only(top: 5.0),
-          child: SizedBox(width: 500, child: _buildBarChart(context)),
+    final screenWidth = MediaQuery.of(context).size.width;
+    final graphWidth = screenWidth * 0.8;
+
+    return Align(
+      alignment: Alignment.center,
+      child: SizedBox(
+        height: 250,
+        width: graphWidth,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5.0),
+            child: SizedBox(width: graphWidth, child: _buildBarChart(context)),
+          ),
         ),
       ),
     );
@@ -154,16 +203,20 @@ class HistoryPageState extends State<HistoryPage> {
         electricityReadings!
             .where((reading) => reading.createdAt.year == _selectedYear)
             .toList();
+
     final completeReadings = getCompleteReadingsForYear(
       selectedYear: _selectedYear!,
       readings: electricityReadings!,
     );
 
-    completeReadings.sort((a, b) => (b.createdAt).compareTo(a.createdAt));
+    completeReadings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    int maxReading = filteredReadings
-        .map((e) => e.currReading)
-        .reduce((a, b) => a > b ? a : b);
+    int maxReading =
+        filteredReadings.isNotEmpty
+            ? filteredReadings
+                .map((e) => e.currReading)
+                .reduce((a, b) => a > b ? a : b)
+            : 0;
 
     int yMax = ((maxReading / 50).ceil() * 50);
 
@@ -178,84 +231,132 @@ class HistoryPageState extends State<HistoryPage> {
       return Center(child: Text("No billing history available."));
     }
 
-    final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱');
-
     return ListView.builder(
       itemCount: billingHistory!.length,
       itemBuilder: (context, index) {
         final bill = billingHistory![index];
-
-        return Card(
-          elevation: 4,
-          margin: EdgeInsets.symmetric(vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Posting Date: ${DateFormat.yMMMMd().format(bill.createdAt)}",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade900,
-                  ),
-                ),
-                Divider(),
-
-                // Readings
-                _buildReadingItem("Previous Reading", bill.prevReading),
-                _buildReadingItem("Current Reading", bill.currReading),
-                _buildReadingItem("Consumption", bill.consumption),
-
-                Divider(),
-
-                // Charges
-                _buildBillItem(
-                  "Room Charges",
-                  bill.roomCharges,
-                  currencyFormat,
-                ),
-                _buildBillItem(
-                  "Electric Charges",
-                  bill.electricCharges,
-                  currencyFormat,
-                ),
-                _buildBillItem(
-                  "Additional Charges",
-                  bill.additionalCharges,
-                  currencyFormat,
-                ),
-
-                if (bill.additionalDescription.isNotEmpty)
-                  Padding(
-                    padding: EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      "Note: ${bill.additionalDescription}",
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-
-                Divider(),
-
-                // Total
-                _buildBillItem(
-                  "Total Amount",
-                  bill.totalAmount,
-                  currencyFormat,
-                  isTotal: true,
-                ),
-              ],
-            ),
-          ),
+        return GestureDetector(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (_) => _buildBillDialog(context, bill),
+            );
+          },
+          child: _buildBillCard(bill, context),
         );
       },
+    );
+  }
+
+  Widget _buildBillCard(Bill bill, BuildContext context) {
+    final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱');
+
+    return Card(
+      elevation: 4,
+      margin: EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Posting Date: ${DateFormat.yMMMMd().format(bill.createdAt)}",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue.shade900,
+              ),
+            ),
+            Divider(),
+
+            // _buildReadingItem("Previous Reading", bill.prevReading),
+            // _buildReadingItem("Current Reading", bill.currReading),
+            _buildReadingItem("Consumption", bill.consumption),
+
+            Divider(),
+
+            // _buildBillItem("Room Charges", bill.roomCharges, currencyFormat),
+            // _buildBillItem(
+            //   "Electric Charges",
+            //   bill.electricCharges,
+            //   currencyFormat,
+            // ),
+            // _buildBillItem(
+            //   "Additional Charges",
+            //   bill.additionalCharges,
+            //   currencyFormat,
+            // ),
+
+            // Divider(),
+            _buildBillItem(
+              "Total Amount",
+              bill.totalAmount,
+              currencyFormat,
+              isTotal: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBillDialog(BuildContext context, Bill bill) {
+    final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱');
+
+    return AlertDialog(
+      title: Text("Billing Details"),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Posting Date: ${DateFormat.yMMMMd().format(bill.createdAt)}"),
+            Divider(),
+
+            _buildReadingItem("Previous Reading", bill.prevReading),
+            _buildReadingItem("Current Reading", bill.currReading),
+            _buildReadingItem("Consumption", bill.consumption),
+
+            Divider(),
+
+            _buildBillItem("Room Charges", bill.roomCharges, currencyFormat),
+            _buildBillItem(
+              "Electric Charges",
+              bill.electricCharges,
+              currencyFormat,
+            ),
+            _buildBillItem(
+              "Additional Charges",
+              bill.additionalCharges,
+              currencyFormat,
+            ),
+
+            if (bill.additionalDescription.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(top: 4.0),
+                child: Text(
+                  "Note: ${bill.additionalDescription}",
+                  style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14),
+                ),
+              ),
+
+            Divider(),
+
+            _buildBillItem(
+              "Total Amount",
+              bill.totalAmount,
+              currencyFormat,
+              isTotal: true,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          child: Text("Close"),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
 
