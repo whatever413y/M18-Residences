@@ -10,13 +10,22 @@ class BillingInitial extends BillingState {}
 
 class BillingLoading extends BillingState {}
 
-class BillingLoaded extends BillingState {
+class BillingsLoaded extends BillingState {
   final List<Bill> bills;
 
-  BillingLoaded(this.bills);
+  BillingsLoaded(this.bills);
 
   @override
   List<Object?> get props => [bills];
+}
+
+class BillingLoaded extends BillingState {
+  final Bill bill;
+
+  BillingLoaded(this.bill);
+
+  @override
+  List<Object?> get props => [bill];
 }
 
 class BillingError extends BillingState {

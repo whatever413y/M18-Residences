@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/tenant/tenant_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/tenant/tenant_event.dart';
+import 'package:rental_management_system_flutter/bloc/tenant/tenant_state.dart';
+import 'package:rental_management_system_flutter/theme.dart';
+import 'package:rental_management_system_flutter/utils/custom_form_field.dart';
 import '../home/home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -7,36 +13,65 @@ class LoginPage extends StatefulWidget {
 }
 
 class LoginPageState extends State<LoginPage> {
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String? _submittedName;
+  String? _accountIdError;
 
-  void _navigateToNextPage() {
-    String inputText = _controller.text.trim();
-    if (inputText.isNotEmpty) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage(inputText: inputText)),
-      );
+  void _searchTenant() {
+    if (_formKey.currentState?.validate() ?? false) {
+      final inputText = _controller.text.trim();
+      _submittedName = inputText;
+      context.read<TenantBloc>().add(FetchTenantByTenantName(inputText));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: _buildBody(context));
-  }
+    final theme = AppTheme.lightTheme;
+    final screenWidth = MediaQuery.of(context).size.width * 0.5;
 
-  Widget _buildBody(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade900, Colors.blue.shade400],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.0),
-          child: _buildCard(context),
+    return Theme(
+      data: theme,
+      child: Scaffold(
+        body: BlocListener<TenantBloc, TenantState>(
+          listener: (context, state) {
+            if (state is TenantLoaded) {
+              if (state.tenant.name.toLowerCase() == _submittedName?.toLowerCase()) {
+                _controller.clear();
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => HomePage(tenant: state.tenant)));
+              }
+            } else if (state is TenantError) {
+              setState(() {
+                _accountIdError = "Account ID not found.";
+              });
+            }
+          },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.blue.shade900, Colors.blue.shade500],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: screenWidth),
+                        child: Padding(padding: const EdgeInsets.all(16.0), child: _buildCard(context)),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -47,73 +82,52 @@ class LoginPageState extends State<LoginPage> {
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
-        padding: EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Image.network(
-                'https://as2.ftcdn.net/v2/jpg/06/18/70/35/1000_F_618703552_WeVTEs8XmeEb1hGiEZ5ZjJXSbx4yiiPm.jpg',
-                height: 120,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(height: 20),
-            Text(
-              "Welcome",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue.shade900,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Enter your Account ID to continue",
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-            ),
-            SizedBox(height: 20),
-            _buildAccountIDInput(context),
-            SizedBox(height: 20),
-            _buildSearchButton(context),
-          ],
+        padding: const EdgeInsets.all(24.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Welcome", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
+              const SizedBox(height: 10),
+              Text("Enter your Account ID to continue", style: TextStyle(fontSize: 16, color: Colors.grey[600]), textAlign: TextAlign.center),
+              const SizedBox(height: 20),
+              _buildAccountIDInput(),
+              const SizedBox(height: 20),
+              _buildSearchButton(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildAccountIDInput(BuildContext context) {
-    return TextField(
+  Widget _buildAccountIDInput() {
+    return CustomTextFormField(
       controller: _controller,
-      style: TextStyle(fontSize: 16),
-      decoration: InputDecoration(
-        labelText: 'Account ID',
-        prefixIcon: Icon(Icons.person),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-        filled: true,
-        fillColor: Colors.grey[100],
-      ),
+      labelText: 'Account ID',
+      prefixIcon: const Icon(Icons.person),
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return 'Please enter your Account ID';
+        }
+        return _accountIdError;
+      },
     );
   }
 
-  Widget _buildSearchButton(BuildContext context) {
+  Widget _buildSearchButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _navigateToNextPage,
+        onPressed: _searchTenant,
         style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           backgroundColor: Colors.blue.shade700,
           elevation: 5,
         ),
-        child: Text(
-          'Search',
-          style: TextStyle(fontSize: 18, color: Colors.white),
-        ),
+        child: const Text('Submit', style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }
