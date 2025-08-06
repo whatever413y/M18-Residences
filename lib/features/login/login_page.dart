@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rental_management_system_flutter/bloc/tenant/tenant_bloc.dart';
-import 'package:rental_management_system_flutter/bloc/tenant/tenant_event.dart';
-import 'package:rental_management_system_flutter/bloc/tenant/tenant_state.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_event.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_state.dart';
 import 'package:rental_management_system_flutter/theme.dart';
 import 'package:rental_management_system_flutter/utils/custom_form_field.dart';
 import '../home/home_page.dart';
@@ -15,15 +15,20 @@ class LoginPage extends StatefulWidget {
 class LoginPageState extends State<LoginPage> {
   final TextEditingController _controller = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String? _submittedName;
   String? _accountIdError;
 
   void _searchTenant() {
+    setState(() {
+      _accountIdError = null;
+    });
     if (_formKey.currentState?.validate() ?? false) {
       final inputText = _controller.text.trim();
-      _submittedName = inputText;
-      context.read<TenantBloc>().add(FetchTenantByTenantName(inputText));
+      context.read<AuthBloc>().add(LoginWithAccountId(inputText));
     }
+  }
+
+  void _navigateToPage(Widget page) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   }
 
   @override
@@ -34,17 +39,16 @@ class LoginPageState extends State<LoginPage> {
     return Theme(
       data: theme,
       child: Scaffold(
-        body: BlocListener<TenantBloc, TenantState>(
+        body: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
-            if (state is TenantLoaded) {
-              if (state.tenant.name.toLowerCase() == _submittedName?.toLowerCase()) {
-                _controller.clear();
-                Navigator.of(context).push(MaterialPageRoute(builder: (_) => HomePage(tenant: state.tenant)));
-              }
-            } else if (state is TenantError) {
+            if (state is AuthError) {
               setState(() {
                 _accountIdError = "Account ID not found.";
               });
+              _formKey.currentState?.validate();
+            } else if (state is Authenticated) {
+              _controller.clear();
+              _navigateToPage(HomePage());
             }
           },
           child: LayoutBuilder(

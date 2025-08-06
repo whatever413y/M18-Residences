@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_event.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_state.dart';
-import 'package:rental_management_system_flutter/bloc/tenant/tenant_bloc.dart';
-import 'package:rental_management_system_flutter/bloc/tenant/tenant_state.dart';
 import 'package:rental_management_system_flutter/features/history/widgets/electric_consumption_bar_chart.dart';
 import 'package:rental_management_system_flutter/models/billing.dart';
 import 'package:rental_management_system_flutter/models/reading.dart';
+import 'package:rental_management_system_flutter/models/tenant.dart';
 import 'package:rental_management_system_flutter/theme.dart';
 import 'package:rental_management_system_flutter/utils/custom_app_bar.dart';
 import 'package:rental_management_system_flutter/utils/custom_dropdown_form.dart';
@@ -20,8 +20,9 @@ class HistoryPage extends StatefulWidget {
 }
 
 class HistoryPageState extends State<HistoryPage> {
+  late AuthBloc authBloc;
   late BillingBloc billingBloc;
-  late TenantBloc tenantBloc;
+  late Tenant tenant;
 
   List<Bill>? billingHistory;
   List<Reading>? electricityReadings;
@@ -31,18 +32,9 @@ class HistoryPageState extends State<HistoryPage> {
   void initState() {
     super.initState();
     billingBloc = context.read<BillingBloc>();
-    tenantBloc = context.read<TenantBloc>();
-
-    final tenantState = tenantBloc.state;
-    if (tenantState is TenantLoaded) {
-      billingBloc.add(FetchBillingsByTenantId(tenantState.tenant.id!));
-    }
-
-    tenantBloc.stream.listen((state) {
-      if (state is TenantLoaded) {
-        billingBloc.add(FetchBillingsByTenantId(state.tenant.id!));
-      }
-    });
+    authBloc = context.read<AuthBloc>();
+    tenant = authBloc.cachedTenant!;
+    billingBloc.add(FetchBillingsByTenantId(tenant.id!));
   }
 
   List<Reading> getCompleteReadingsForYear({required int selectedYear, required List<Reading> readings}) {
@@ -66,64 +58,50 @@ class HistoryPageState extends State<HistoryPage> {
       data: theme,
       child: Scaffold(
         appBar: CustomAppBar(title: "Billing History"),
-        body: BlocBuilder<TenantBloc, TenantState>(
-          builder: (context, tenantState) {
-            if (tenantState is TenantLoading) {
+        body: BlocBuilder<BillingBloc, BillingState>(
+          builder: (context, billingState) {
+            if (billingState is BillingLoading) {
               return const Center(child: CircularProgressIndicator());
-            } else if (tenantState is TenantError) {
-              return Center(child: Text('Error loading tenant: ${tenantState.message}'));
-            } else if (tenantState is TenantLoaded) {
-              return BlocBuilder<BillingBloc, BillingState>(
-                builder: (context, billingState) {
-                  if (billingState is BillingLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (billingState is BillingError) {
-                    return buildErrorWidget(
-                      context: context,
-                      message: billingState.message,
-                      onRetry: () => billingBloc.add(FetchBillingsByTenantId(tenantState.tenant.id!)),
+            } else if (billingState is BillingError) {
+              return buildErrorWidget(
+                context: context,
+                message: billingState.message,
+                onRetry: () => billingBloc.add(FetchBillingsByTenantId(tenant.id!)),
+              );
+            } else if (billingState is BillingsLoaded) {
+              billingHistory = billingState.bills;
+
+              electricityReadings =
+                  billingHistory!.map((bill) {
+                    return Reading(
+                      id: bill.id,
+                      prevReading: bill.prevReading,
+                      currReading: bill.currReading,
+                      consumption: bill.consumption,
+                      createdAt: bill.createdAt,
                     );
-                  } else if (billingState is BillingsLoaded) {
-                    billingHistory = billingState.bills;
+                  }).toList();
 
-                    electricityReadings =
-                        billingHistory!.map((bill) {
-                          return Reading(
-                            id: bill.id,
-                            prevReading: bill.prevReading,
-                            currReading: bill.currReading,
-                            consumption: bill.consumption,
-                            createdAt: bill.createdAt,
-                          );
-                        }).toList();
+              _selectedYear ??=
+                  electricityReadings!.any((r) => r.createdAt.year == DateTime.now().year)
+                      ? DateTime.now().year
+                      : electricityReadings!.first.createdAt.year;
 
-                    _selectedYear ??=
-                        electricityReadings!.any((r) => r.createdAt.year == DateTime.now().year)
-                            ? DateTime.now().year
-                            : electricityReadings!.first.createdAt.year;
-
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: isMobile ? 40 : 16, vertical: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Align(
-                            alignment: Alignment.topRight,
-                            child: SizedBox(width: isMobile ? 150 : 120, child: _buildDropdownYearSelector(context)),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildGraph(context),
-                          const SizedBox(height: 16),
-                          Expanded(child: _buildBillingHistory(context)),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return const SizedBox();
-                },
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 40 : 16, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(alignment: Alignment.topRight, child: SizedBox(width: isMobile ? 150 : 120, child: _buildDropdownYearSelector(context))),
+                    const SizedBox(height: 12),
+                    _buildGraph(context),
+                    const SizedBox(height: 16),
+                    Expanded(child: _buildBillingHistory(context)),
+                  ],
+                ),
               );
             }
+
             return const SizedBox();
           },
         ),

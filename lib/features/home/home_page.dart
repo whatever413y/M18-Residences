@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_event.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_state.dart';
@@ -12,31 +13,29 @@ import 'package:rental_management_system_flutter/utils/widgets/widgets.dart';
 import '../history/history_page.dart';
 
 class HomePage extends StatefulWidget {
-  final Tenant tenant;
-
-  HomePage({required this.tenant});
-
   @override
   HomePageState createState() => HomePageState();
 }
 
 class HomePageState extends State<HomePage> {
+  late AuthBloc authBloc;
   late BillingBloc billingBloc;
-  late int tenantId;
+  late Tenant tenant;
   Bill? bill;
 
   @override
   void initState() {
     super.initState();
-    tenantId = widget.tenant.id!;
     billingBloc = context.read<BillingBloc>();
-    billingBloc.add(FetchBillingByTenantId(tenantId));
+    authBloc = context.read<AuthBloc>();
+    tenant = authBloc.cachedTenant!;
+    billingBloc.add(FetchBillingByTenantId(tenant.id!));
   }
 
   void _navigateToPage(Widget page) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page)).then((updated) {
       if (updated == true) {
-        billingBloc.add(FetchBillingByTenantId(tenantId));
+        billingBloc.add(FetchBillingByTenantId(tenant.id!));
       }
     });
   }
@@ -48,7 +47,7 @@ class HomePageState extends State<HomePage> {
     return Theme(
       data: theme,
       child: Scaffold(
-        appBar: CustomAppBar(title: "Welcome ${widget.tenant.name}"),
+        appBar: CustomAppBar(title: "Welcome ${tenant.name}", logoutOnBack: true),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final screenWidth = MediaQuery.of(context).size.width;
@@ -59,14 +58,16 @@ class HomePageState extends State<HomePage> {
                 if (state is BillingLoading) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (state is BillingError) {
-                  return buildErrorWidget(context: context, message: state.message, onRetry: () => billingBloc.add(FetchBillingByTenantId(tenantId)));
+                  return buildErrorWidget(
+                    context: context,
+                    message: state.message,
+                    onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                  );
                 } else if (state is BillingLoaded) {
                   bill = state.bill;
-
                   if (bill == null) {
                     return const Center(child: CircularProgressIndicator());
                   }
-
                   return Stack(
                     children: [
                       Container(

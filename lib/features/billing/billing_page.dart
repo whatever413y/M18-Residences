@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_event.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_state.dart';
-import 'package:rental_management_system_flutter/bloc/tenant/tenant_bloc.dart';
-import 'package:rental_management_system_flutter/bloc/tenant/tenant_state.dart';
 import 'package:rental_management_system_flutter/models/billing.dart';
+import 'package:rental_management_system_flutter/models/tenant.dart';
 import 'package:rental_management_system_flutter/theme.dart';
 import 'package:rental_management_system_flutter/utils/custom_app_bar.dart';
 import 'package:rental_management_system_flutter/utils/widgets/widgets.dart';
@@ -17,25 +17,18 @@ class BillingPage extends StatefulWidget {
 }
 
 class BillingPageState extends State<BillingPage> {
+  late AuthBloc authBloc;
   late BillingBloc billingBloc;
-  late TenantBloc tenantBloc;
+  late Tenant tenant;
   Bill? bill;
 
   @override
   void initState() {
     super.initState();
     billingBloc = context.read<BillingBloc>();
-    tenantBloc = context.read<TenantBloc>();
-
-    final tenantState = tenantBloc.state;
-    if (tenantState is TenantLoaded) {
-      billingBloc.add(FetchBillingByTenantId(tenantState.tenant.id!));
-    }
-    tenantBloc.stream.listen((state) {
-      if (state is TenantLoaded) {
-        billingBloc.add(FetchBillingByTenantId(state.tenant.id!));
-      }
-    });
+    authBloc = context.read<AuthBloc>();
+    tenant = authBloc.cachedTenant!;
+    billingBloc.add(FetchBillingByTenantId(tenant.id!));
   }
 
   @override
@@ -51,47 +44,34 @@ class BillingPageState extends State<BillingPage> {
             final screenWidth = MediaQuery.of(context).size.width;
             final isMobile = screenWidth < 800;
 
-            return BlocBuilder<TenantBloc, TenantState>(
-              builder: (context, tenantState) {
-                if (tenantState is TenantLoading) {
+            return BlocBuilder<BillingBloc, BillingState>(
+              builder: (context, billingState) {
+                if (billingState is BillingLoading) {
                   return const Center(child: CircularProgressIndicator());
-                } else if (tenantState is TenantError) {
-                  return Center(child: Text('Error loading tenant: ${tenantState.message}'));
-                } else if (tenantState is TenantLoaded) {
-                  final tenantId = tenantState.tenant.id!;
-                  return BlocBuilder<BillingBloc, BillingState>(
-                    builder: (context, billingState) {
-                      if (billingState is BillingLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (billingState is BillingError) {
-                        return buildErrorWidget(
-                          context: context,
-                          message: billingState.message,
-                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenantId)),
-                        );
-                      } else if (billingState is BillingLoaded) {
-                        bill = billingState.bill;
+                } else if (billingState is BillingError) {
+                  return buildErrorWidget(
+                    context: context,
+                    message: billingState.message,
+                    onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                  );
+                } else if (billingState is BillingLoaded) {
+                  bill = billingState.bill;
 
-                        if (bill == null) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
+                  if (bill == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                        return Center(
-                          child: SingleChildScrollView(
-                            child: Container(
-                              width: isMobile ? double.infinity : 800,
-                              padding: const EdgeInsets.all(16.0),
-                              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                              child: _buildBillCard(bill!),
-                            ),
-                          ),
-                        );
-                      }
-                      return const SizedBox();
-                    },
+                  return Center(
+                    child: SingleChildScrollView(
+                      child: Container(
+                        width: isMobile ? double.infinity : 800,
+                        padding: const EdgeInsets.all(16.0),
+                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                        child: _buildBillCard(bill!),
+                      ),
+                    ),
                   );
                 }
-
                 return const SizedBox();
               },
             );

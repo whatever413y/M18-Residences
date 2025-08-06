@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_event.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final List<Widget>? actions;
+  final Widget? leading;
+  final bool logoutOnBack;
 
-  const CustomAppBar({super.key, required this.title, this.actions});
+  const CustomAppBar({super.key, required this.title, this.actions, this.leading, this.logoutOnBack = false});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +25,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: appBarTheme.elevation ?? 4,
       leading: IconButton(
         icon: Icon(Icons.arrow_back, color: appBarTheme.iconTheme?.color ?? Colors.white),
-        onPressed: () => Navigator.of(context).pop(true),
+        onPressed: () {
+          if (logoutOnBack) {
+            context.read<AuthBloc>().add(LogoutRequested());
+            Navigator.of(context).pop(true);
+          } else {
+            Navigator.of(context).pop(true);
+          }
+        },
       ),
     );
   }
