@@ -81415,7 +81415,7 @@ A.Ym.prototype={
 nG(a){return this.aje(a)},
 aje(a){var s=0,r=A.P(t.ob),q,p=this,o,n,m,l,k,j,i,h
 var $async$nG=A.L(function(b,c){if(b===1)return A.M(c,r)
-while(true)switch(s){case 0:k=A.eH("l/auth/login")
+while(true)switch(s){case 0:k=A.eH("https://rental-management-system-service.onrender.com/api/auth/login")
 j=t.N
 i=A.an(["Content-Type","application/json"],j,j)
 s=3
@@ -81503,7 +81503,7 @@ return A.R(n.vq(),$async$pN)
 case 4:m=b
 p=6
 s=9
-return A.R(A.aqI(A.eH("l/auth/validate-token"),m),$async$pN)
+return A.R(A.aqI(A.eH("https://rental-management-system-service.onrender.com/api/auth/validate-token"),m),$async$pN)
 case 9:l=b
 j=l.b
 q=j===200
@@ -81529,7 +81529,7 @@ UR(a){var s=0,r=A.P(t.VQ),q,p,o
 var $async$uK=A.L(function(b,c){if(b===1)return A.M(c,r)
 while(true)switch(s){case 0:p=""+a
 s=3
-return A.R(A.aqI(A.eH("l/tenants/"+p),null),$async$uK)
+return A.R(A.aqI(A.eH("https://rental-management-system-service.onrender.com/api/tenants/"+p),null),$async$uK)
 case 3:o=c
 if(o.b===200){q=A.ayY(B.bl.tm(A.Xt(A.Xg(o.e)).eb(o.w),null))
 s=1
@@ -81561,7 +81561,7 @@ return A.R(n.r9(),$async$qk)
 case 7:m=c
 i=""+a
 s=8
-return A.R(A.aqI(A.eH("l/tenant/"+i),m),$async$qk)
+return A.R(A.aqI(A.eH("https://rental-management-system-service.onrender.com/api/tenant/"+i),m),$async$qk)
 case 8:l=c
 if(l.b===200){i=l
 k=B.bl.tm(A.Xt(A.Xg(i.e)).eb(i.w),null)
@@ -81594,7 +81594,7 @@ return A.R(n.r9(),$async$ql)
 case 7:m=c
 j=""+a
 s=8
-return A.R(A.aqI(A.eH("l/"+j),m),$async$ql)
+return A.R(A.aqI(A.eH("https://rental-management-system-service.onrender.com/api/"+j),m),$async$ql)
 case 8:l=c
 if(l.b===200){j=l
 j=A.avy(B.bl.tm(A.Xt(A.Xg(j.e)).eb(j.w),null))
