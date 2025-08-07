@@ -21,7 +21,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web
-        run: flutter build web --dart-define=API_URL=${{ secrets.API_URL }}
+        run: flutter build web --dart-define=API_URL=${{ secrets.API_URL }} --base-href="/M18-Residences/"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
