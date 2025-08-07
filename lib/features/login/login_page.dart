@@ -13,8 +13,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class LoginPageState extends State<LoginPage> {
-  final TextEditingController _controller = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final _controller = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   String? _accountIdError;
 
   void _searchTenant() {
