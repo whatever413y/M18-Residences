@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
-import 'package:rental_management_system_flutter/bloc/auth/auth_event.dart';
-import 'package:rental_management_system_flutter/features/login/login_page.dart';
-import 'package:rental_management_system_flutter/models/billing.dart';
+import 'package:m18_residences/bloc/auth/auth_bloc.dart';
+import 'package:m18_residences/bloc/auth/auth_event.dart';
+import 'package:m18_residences/features/login/login_page.dart';
+import 'package:m18_residences/models/billing.dart';
 
 Widget buildBillItemWidget(String label, int amount, NumberFormat currencyFormat, {bool isTotal = false}) {
   return Padding(

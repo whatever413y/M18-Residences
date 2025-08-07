@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rental_management_system_flutter/models/tenant.dart';
+import 'package:m18_residences/models/tenant.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
-import 'package:rental_management_system_flutter/services/auth_service.dart';
+import 'package:m18_residences/services/auth_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthService authService;

@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:rental_management_system_flutter/models/billing.dart';
+import 'package:m18_residences/models/billing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BillingService {
-  static final String baseUrl = '${dotenv.env['API_URL']}/bills';
+  static final String baseUrl = String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000');
 
   Future<Map<String, String>> _getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();

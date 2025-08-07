@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
-import 'package:rental_management_system_flutter/bloc/auth/auth_event.dart';
-import 'package:rental_management_system_flutter/bloc/auth/auth_state.dart';
-import 'package:rental_management_system_flutter/theme.dart';
-import 'package:rental_management_system_flutter/utils/custom_form_field.dart';
+import 'package:m18_residences/bloc/auth/auth_bloc.dart';
+import 'package:m18_residences/bloc/auth/auth_event.dart';
+import 'package:m18_residences/bloc/auth/auth_state.dart';
+import 'package:m18_residences/theme.dart';
+import 'package:m18_residences/utils/custom_form_field.dart';
 import '../home/home_page.dart';
 
 class LoginPage extends StatefulWidget {

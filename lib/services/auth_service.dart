@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:rental_management_system_flutter/models/tenant.dart';
+import 'package:m18_residences/models/tenant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
+  static const String baseUrl = String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000/api');
   static const _tokenKey = 'auth_token';
   static const _tenantIdKey = 'tenant_id';
 
@@ -13,7 +13,7 @@ class AuthService {
   Tenant? get cachedTenant => _cachedTenant;
 
   Future<String?> login(String username) async {
-    final url = Uri.parse('${dotenv.env['API_URL']}/auth/login');
+    final url = Uri.parse('$baseUrl/auth/login');
 
     final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'name': username}));
 
@@ -65,7 +65,7 @@ class AuthService {
     if (token == null || token.isEmpty) return false;
     final headers = await _getAuthHeaders();
     try {
-      final response = await http.get(Uri.parse('${dotenv.env['API_URL']}/auth/validate-token'), headers: headers);
+      final response = await http.get(Uri.parse('$baseUrl/auth/validate-token'), headers: headers);
       return response.statusCode == 200;
     } catch (e) {
       throw Exception('Error validating token: $e');
@@ -73,7 +73,7 @@ class AuthService {
   }
 
   Future<Tenant> getByTenantId(int id) async {
-    final String url = '${dotenv.env['API_URL']}/tenants/$id';
+    final String url = '$baseUrl/tenants/$id';
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {

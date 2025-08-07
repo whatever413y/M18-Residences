@@ -1,17 +1,13 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:rental_management_system_flutter/models/reading.dart';
+import 'package:m18_residences/models/reading.dart';
 
 class ElectricConsumptionBarChart extends StatelessWidget {
   final List<Reading> completeReadings;
   final int yMax;
 
-  const ElectricConsumptionBarChart({
-    super.key,
-    required this.completeReadings,
-    required this.yMax,
-  });
+  const ElectricConsumptionBarChart({super.key, required this.completeReadings, required this.yMax});
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +28,7 @@ class ElectricConsumptionBarChart extends StatelessWidget {
                     color: Colors.blue,
                     width: 15,
                     borderRadius: BorderRadius.circular(4),
-                    backDrawRodData: BackgroundBarChartRodData(
-                      show: true,
-                      toY: yMax.toDouble(),
-                      color: Colors.grey.withValues(alpha: 0.2),
-                    ),
+                    backDrawRodData: BackgroundBarChartRodData(show: true, toY: yMax.toDouble(), color: Colors.grey.withValues(alpha: 0.2)),
                   ),
                 ],
               );
@@ -75,10 +67,7 @@ class ElectricConsumptionBarChart extends StatelessWidget {
             fitInsideVertically: true,
             tooltipPadding: EdgeInsets.all(4),
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              return BarTooltipItem(
-                "${rod.toY.toStringAsFixed(1)} kWh",
-                TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              );
+              return BarTooltipItem("${rod.toY.toStringAsFixed(1)} kWh", TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
             },
           ),
           touchCallback: (FlTouchEvent event, barTouchResponse) {
