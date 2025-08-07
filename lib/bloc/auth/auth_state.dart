@@ -20,7 +20,14 @@ class Authenticated extends AuthState {
   List<Object?> get props => [token, tenant];
 }
 
-class Unauthenticated extends AuthState {}
+class Unauthenticated extends AuthState {
+  final String message;
+
+  Unauthenticated(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
 
 class AuthError extends AuthState {
   final String message;

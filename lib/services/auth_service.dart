@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:rental_management_system_flutter/models/tenant.dart';
@@ -9,71 +8,78 @@ class AuthService {
   static const _tokenKey = 'auth_token';
   static const _tenantIdKey = 'tenant_id';
 
-  Future<String?> login(String username, String tenantId) async {
-    if (username.isNotEmpty) {
-      final token = 'dummy_token_123';
+  Tenant? _cachedTenant;
+
+  Tenant? get cachedTenant => _cachedTenant;
+
+  Future<String?> login(String username) async {
+    final url = Uri.parse('${dotenv.env['API_URL']}/auth/login');
+
+    final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'name': username}));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'] as String?;
+      final tenantJson = data['tenant'] as Map<String, dynamic>;
+
+      if (token == null || token.isEmpty) {
+        throw Exception('Token is missing from login response');
+      }
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, token);
-      await prefs.setString(_tenantIdKey, tenantId);
+      await prefs.setString(_tenantIdKey, tenantJson['id'].toString());
+
+      _cachedTenant = Tenant.fromJson(tenantJson);
       return token;
+    } else {
+      throw Exception('Login failed: ${response.body}');
     }
-    return null;
   }
 
-  //   Future<String?> login(String username) async {
-  //   final response = await http.post(
-  //     Uri.parse('${dotenv.env['API_URL']}/auth/login'),
-  //     headers: {'Content-Type': 'application/json'},
-  //     body: jsonEncode({'username': username}),
-  //   );
-
-  //   if (response.statusCode == 200) {
-  //     final data = jsonDecode(response.body);
-  //     final token = data['token'];
-  //     final tenantId = data['tenant']['id'].toString();
-
-  //     final prefs = await SharedPreferences.getInstance();
-  //     await prefs.setString(_tokenKey, token);
-  //     await prefs.setString(_tenantIdKey, tenantId);
-  //     return token;
-  //   } else {
-  //     throw Exception('Login failed: ${response.body}');
-  //   }
-  // }
-
-  // Logout – clears token and tenant ID
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_tenantIdKey);
+    _cachedTenant = null;
   }
 
-  // Get saved token (if any)
+  Future<Map<String, String>> _getAuthHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    return {'Content-Type': 'application/json', if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token'};
+  }
+
   Future<String?> getSavedToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_tokenKey);
   }
 
-  // Get saved tenant ID (if any)
   Future<String?> getSavedTenantId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_tenantIdKey);
   }
 
-  // Check if user is authenticated (token exists)
   Future<bool> isAuthenticated() async {
     final token = await getSavedToken();
-    return token != null;
+    if (token == null || token.isEmpty) return false;
+    final headers = await _getAuthHeaders();
+    try {
+      final response = await http.get(Uri.parse('${dotenv.env['API_URL']}/auth/validate-token'), headers: headers);
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Error validating token: $e');
+    }
   }
 
-  Future<Tenant> getByTenantName(String name) async {
-    final String baseUrl = '${dotenv.env['API_URL']}/tenants/tenant/name';
-    final response = await http.get(Uri.parse('$baseUrl/$name'));
+  Future<Tenant> getByTenantId(int id) async {
+    final String url = '${dotenv.env['API_URL']}/tenants/$id';
+    final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       return Tenant.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to load tenant with name $name');
+      throw Exception('Failed to load tenant with id $id');
     }
   }
 }

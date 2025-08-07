@@ -24,7 +24,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: actions,
       elevation: appBarTheme.elevation ?? 4,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: appBarTheme.iconTheme?.color ?? Colors.white),
+        icon: logoutOnBack ? const Icon(Icons.logout, color: Colors.white) : leading ?? const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () {
           if (logoutOnBack) {
             context.read<AuthBloc>().add(LogoutRequested());

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_event.dart';
+import 'package:rental_management_system_flutter/features/login/login_page.dart';
 import 'package:rental_management_system_flutter/models/billing.dart';
 
 Widget buildBillItemWidget(String label, int amount, NumberFormat currencyFormat, {bool isTotal = false}) {
@@ -35,14 +39,23 @@ Widget buildReadingItemWidget(String label, int value) {
   );
 }
 
-Widget buildErrorWidget({required BuildContext context, required String message, required VoidCallback onRetry}) {
+Widget buildErrorWidget({required BuildContext context, required String message, VoidCallback? onRetry}) {
   return Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(message, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
         const SizedBox(height: 16),
-        ElevatedButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('Refresh')),
+        ElevatedButton.icon(
+          onPressed:
+              onRetry ??
+              () {
+                context.read<AuthBloc>().add(LogoutRequested());
+                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => LoginPage()), (route) => false);
+              },
+          icon: const Icon(Icons.refresh),
+          label: const Text('Refresh'),
+        ),
       ],
     ),
   );

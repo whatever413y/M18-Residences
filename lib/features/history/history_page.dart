@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_event.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_state.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_event.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_state.dart';
@@ -31,9 +33,10 @@ class HistoryPageState extends State<HistoryPage> {
   @override
   void initState() {
     super.initState();
-    billingBloc = context.read<BillingBloc>();
     authBloc = context.read<AuthBloc>();
+    authBloc.add(CheckAuthStatus());
     tenant = authBloc.cachedTenant!;
+    billingBloc = context.read<BillingBloc>();
     billingBloc.add(FetchBillingsByTenantId(tenant.id!));
   }
 
@@ -58,51 +61,64 @@ class HistoryPageState extends State<HistoryPage> {
       data: theme,
       child: Scaffold(
         appBar: CustomAppBar(title: "Billing History"),
-        body: BlocBuilder<BillingBloc, BillingState>(
-          builder: (context, billingState) {
-            if (billingState is BillingLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (billingState is BillingError) {
-              return buildErrorWidget(
-                context: context,
-                message: billingState.message,
-                onRetry: () => billingBloc.add(FetchBillingsByTenantId(tenant.id!)),
-              );
-            } else if (billingState is BillingsLoaded) {
-              billingHistory = billingState.bills;
-
-              electricityReadings =
-                  billingHistory!.map((bill) {
-                    return Reading(
-                      id: bill.id,
-                      prevReading: bill.prevReading,
-                      currReading: bill.currReading,
-                      consumption: bill.consumption,
-                      createdAt: bill.createdAt,
-                    );
-                  }).toList();
-
-              _selectedYear ??=
-                  electricityReadings!.any((r) => r.createdAt.year == DateTime.now().year)
-                      ? DateTime.now().year
-                      : electricityReadings!.first.createdAt.year;
-
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: isMobile ? 40 : 16, vertical: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Align(alignment: Alignment.topRight, child: SizedBox(width: isMobile ? 150 : 120, child: _buildDropdownYearSelector(context))),
-                    const SizedBox(height: 12),
-                    _buildGraph(context),
-                    const SizedBox(height: 16),
-                    Expanded(child: _buildBillingHistory(context)),
-                  ],
-                ),
-              );
+        body: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, authState) {
+            if (authState is Unauthenticated) {
+              return buildErrorWidget(context: context, message: authState.message);
             }
+            return BlocBuilder<BillingBloc, BillingState>(
+              builder: (context, billingState) {
+                if (billingState is BillingLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (billingState is BillingError) {
+                  return buildErrorWidget(context: context, message: billingState.message);
+                } else if (billingState is BillingsLoaded) {
+                  billingHistory = billingState.bills;
+                  if (billingHistory == null || billingHistory!.isEmpty) {
+                    return buildErrorWidget(
+                      context: context,
+                      message: "No billing data available for this tenant.",
+                      onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                    );
+                  }
 
-            return const SizedBox();
+                  electricityReadings =
+                      billingHistory!.map((bill) {
+                        return Reading(
+                          id: bill.id,
+                          prevReading: bill.prevReading,
+                          currReading: bill.currReading,
+                          consumption: bill.consumption,
+                          createdAt: bill.createdAt,
+                        );
+                      }).toList();
+
+                  _selectedYear ??=
+                      electricityReadings!.any((r) => r.createdAt.year == DateTime.now().year)
+                          ? DateTime.now().year
+                          : electricityReadings!.first.createdAt.year;
+
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 40 : 16, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: SizedBox(width: isMobile ? 150 : 120, child: _buildDropdownYearSelector(context)),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildGraph(context),
+                        const SizedBox(height: 16),
+                        Expanded(child: _buildBillingHistory(context)),
+                      ],
+                    ),
+                  );
+                }
+
+                return const SizedBox();
+              },
+            );
           },
         ),
       ),

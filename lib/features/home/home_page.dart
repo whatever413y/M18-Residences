@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_event.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_state.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_event.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_state.dart';
@@ -26,15 +28,17 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    billingBloc = context.read<BillingBloc>();
     authBloc = context.read<AuthBloc>();
+    authBloc.add(CheckAuthStatus());
     tenant = authBloc.cachedTenant!;
+    billingBloc = context.read<BillingBloc>();
     billingBloc.add(FetchBillingByTenantId(tenant.id!));
   }
 
   void _navigateToPage(Widget page) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page)).then((updated) {
       if (updated == true) {
+        authBloc.add(CheckAuthStatus());
         billingBloc.add(FetchBillingByTenantId(tenant.id!));
       }
     });
@@ -53,46 +57,59 @@ class HomePageState extends State<HomePage> {
             final screenWidth = MediaQuery.of(context).size.width;
             final isMobile = screenWidth < 800;
 
-            return BlocBuilder<BillingBloc, BillingState>(
-              builder: (context, state) {
-                if (state is BillingLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is BillingError) {
-                  return buildErrorWidget(
-                    context: context,
-                    message: state.message,
-                    onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
-                  );
-                } else if (state is BillingLoaded) {
-                  bill = state.bill;
-                  if (bill == null) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue.shade900, Colors.blue.shade500],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: SingleChildScrollView(
-                          child: Container(
-                            width: isMobile ? double.infinity : 800,
-                            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                            padding: const EdgeInsets.all(16.0),
-                            child: _buildBody(context),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
+            return BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                if (authState is Unauthenticated) {
+                  return buildErrorWidget(context: context, message: authState.message);
                 }
-                return const SizedBox();
+                return BlocBuilder<BillingBloc, BillingState>(
+                  builder: (context, billingState) {
+                    if (billingState is BillingLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (billingState is BillingError) {
+                      return buildErrorWidget(
+                        context: context,
+                        message: billingState.message,
+                        onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                      );
+                    } else if (billingState is BillingLoaded) {
+                      bill = billingState.bill;
+                      if (bill == null) {
+                        return buildErrorWidget(
+                          context: context,
+                          message: "No billing data available for this tenant.",
+                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                        );
+                      }
+
+                      return Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.blue.shade900, Colors.blue.shade500],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                          ),
+                          Center(
+                            child: SingleChildScrollView(
+                              child: Container(
+                                width: isMobile ? double.infinity : 800,
+                                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                                padding: const EdgeInsets.all(16.0),
+                                child: _buildBody(context),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    return const SizedBox(); // fallback
+                  },
+                );
               },
             );
           },

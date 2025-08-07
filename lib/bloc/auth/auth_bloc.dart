@@ -9,51 +9,54 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Tenant? _cachedTenant;
 
-  AuthBloc({required this.authService}) : super(Unauthenticated()) {
+  AuthBloc({required this.authService}) : super(AuthInitial()) {
     on<CheckAuthStatus>(_onCheckAuthStatus);
     on<LoginWithAccountId>(_onLoginWithAccountId);
     on<LogoutRequested>(_onLogout);
   }
 
   Future<void> _onCheckAuthStatus(CheckAuthStatus event, Emitter<AuthState> emit) async {
-    final isAuth = await authService.isAuthenticated();
-
-    if (isAuth) {
-      final tenantId = await authService.getSavedTenantId();
-      if (tenantId != null) {
-        try {
-          final tenant = await authService.getByTenantName('admin');
-          _cachedTenant = tenant;
-          emit(Authenticated(token: 'dummy_token_123', tenant: tenant));
-          return;
-        } catch (_) {}
+    try {
+      final isAuth = await authService.isAuthenticated();
+      if (!isAuth) {
+        return emit(Unauthenticated('Session has expired. Please try again'));
       }
-    }
 
-    emit(Unauthenticated());
+      final tenantId = await authService.getSavedTenantId();
+      if (tenantId == null) {
+        return emit(Unauthenticated('Tenant ID is missing. Please try again.'));
+      }
+
+      final tenant = _cachedTenant ?? await authService.getByTenantId(int.parse(tenantId));
+      _cachedTenant = tenant;
+
+      final token = await authService.getSavedToken();
+      if (token == null) {
+        return emit(Unauthenticated('Token is unexpectedly missing. Please try again.'));
+      }
+
+      emit(Authenticated(token: token, tenant: tenant));
+    } catch (e) {
+      emit(Unauthenticated('An error occurred while checking authentication status: $e'));
+    }
   }
 
   Future<void> _onLoginWithAccountId(LoginWithAccountId event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final tenant = await authService.getByTenantName(event.accountId);
-      final token = await authService.login(tenant.name, tenant.id.toString());
+      final token = await authService.login(event.accountId);
+      final tenant = authService.cachedTenant!;
       _cachedTenant = tenant;
       emit(Authenticated(token: token!, tenant: tenant));
-      await Future.delayed(Duration(seconds: 1));
     } catch (e) {
       emit(AuthError(e.toString()));
     }
   }
 
   Future<void> _onLogout(LogoutRequested event, Emitter<AuthState> emit) async {
-    try {
-      await authService.logout();
-      _cachedTenant = null;
-      emit(Unauthenticated());
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
+    await authService.logout();
+    _cachedTenant = null;
+    emit(Unauthenticated('You have been logged out.'));
   }
 
   Tenant? get cachedTenant => _cachedTenant;

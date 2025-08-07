@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:rental_management_system_flutter/bloc/auth/auth_bloc.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_event.dart';
+import 'package:rental_management_system_flutter/bloc/auth/auth_state.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_bloc.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_event.dart';
 import 'package:rental_management_system_flutter/bloc/billing/billing_state.dart';
@@ -25,9 +27,10 @@ class BillingPageState extends State<BillingPage> {
   @override
   void initState() {
     super.initState();
-    billingBloc = context.read<BillingBloc>();
     authBloc = context.read<AuthBloc>();
+    authBloc.add(CheckAuthStatus());
     tenant = authBloc.cachedTenant!;
+    billingBloc = context.read<BillingBloc>();
     billingBloc.add(FetchBillingByTenantId(tenant.id!));
   }
 
@@ -44,35 +47,47 @@ class BillingPageState extends State<BillingPage> {
             final screenWidth = MediaQuery.of(context).size.width;
             final isMobile = screenWidth < 800;
 
-            return BlocBuilder<BillingBloc, BillingState>(
-              builder: (context, billingState) {
-                if (billingState is BillingLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (billingState is BillingError) {
-                  return buildErrorWidget(
-                    context: context,
-                    message: billingState.message,
-                    onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
-                  );
-                } else if (billingState is BillingLoaded) {
-                  bill = billingState.bill;
-
-                  if (bill == null) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  return Center(
-                    child: SingleChildScrollView(
-                      child: Container(
-                        width: isMobile ? double.infinity : 800,
-                        padding: const EdgeInsets.all(16.0),
-                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                        child: _buildBillCard(bill!),
-                      ),
-                    ),
-                  );
+            return BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                if (authState is Unauthenticated) {
+                  return buildErrorWidget(context: context, message: 'You are not authenticated. Please log in.');
                 }
-                return const SizedBox();
+
+                return BlocBuilder<BillingBloc, BillingState>(
+                  builder: (context, billingState) {
+                    if (billingState is BillingLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (billingState is BillingError) {
+                      return buildErrorWidget(
+                        context: context,
+                        message: billingState.message,
+                        onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                      );
+                    } else if (billingState is BillingLoaded) {
+                      bill = billingState.bill;
+                      if (bill == null) {
+                        return buildErrorWidget(
+                          context: context,
+                          message: "No billing data available for this tenant.",
+                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                        );
+                      }
+
+                      return Center(
+                        child: SingleChildScrollView(
+                          child: Container(
+                            width: isMobile ? double.infinity : 800,
+                            padding: const EdgeInsets.all(16.0),
+                            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                            child: _buildBillCard(bill!),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return const SizedBox();
+                  },
+                );
               },
             );
           },
