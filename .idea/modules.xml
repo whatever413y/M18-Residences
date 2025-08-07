@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/rental_management_system_flutter.iml" filepath="$PROJECT_DIR$/rental_management_system_flutter.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android/rental_management_system_flutter_android.iml" filepath="$PROJECT_DIR$/android/rental_management_system_flutter_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/m18_residences.iml" filepath="$PROJECT_DIR$/m18_residences.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/m18_residences_android.iml" filepath="$PROJECT_DIR$/android/m18_residences_android.iml" />
     </modules>
   </component>
 </project>

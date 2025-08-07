@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'billing_event.dart';
 import 'billing_state.dart';
-import 'package:rental_management_system_flutter/services/billing_service.dart';
+import 'package:m18_residences/services/billing_service.dart';
 
 class BillingBloc extends Bloc<BillingEvent, BillingState> {
   final BillingService billingService;

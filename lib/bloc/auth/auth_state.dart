@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:rental_management_system_flutter/models/tenant.dart';
+import 'package:m18_residences/models/tenant.dart';
 
 abstract class AuthState extends Equatable {
   @override
