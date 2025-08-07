@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:m18_residences/bloc/auth/auth_bloc.dart';
 import 'package:m18_residences/bloc/auth/auth_event.dart';
 import 'package:m18_residences/bloc/billing/billing_bloc.dart';
@@ -10,7 +9,6 @@ import 'package:m18_residences/theme.dart';
 import 'features/login/login_page.dart';
 
 Future<void> main() async {
-  await dotenv.load();
   runApp(MyApp());
 }
 
