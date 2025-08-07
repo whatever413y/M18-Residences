@@ -28,4 +28,3 @@ jobs:
         with:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
           publish_dir: ./build/web
-          disable_nojekyll: true
