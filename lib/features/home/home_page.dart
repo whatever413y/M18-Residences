@@ -54,8 +54,10 @@ class HomePageState extends State<HomePage> {
         appBar: CustomAppBar(title: "Welcome ${tenant.name}", logoutOnBack: true),
         body: LayoutBuilder(
           builder: (context, constraints) {
-            final screenWidth = MediaQuery.of(context).size.width;
-            final isMobile = screenWidth < 800;
+            final maxWidth = constraints.maxWidth;
+            final isMobile = maxWidth < 800;
+
+            final contentWidth = isMobile ? maxWidth : 800.0;
 
             return BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
@@ -96,18 +98,17 @@ class HomePageState extends State<HomePage> {
                           Center(
                             child: SingleChildScrollView(
                               child: Container(
-                                width: isMobile ? double.infinity : 800,
+                                width: contentWidth,
                                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                                padding: const EdgeInsets.all(16.0),
-                                child: _buildBody(context),
+                                padding: EdgeInsets.symmetric(horizontal: isMobile ? 12.0 : 24.0, vertical: 16.0),
+                                child: _buildBody(context, isMobile),
                               ),
                             ),
                           ),
                         ],
                       );
                     }
-
-                    return const SizedBox(); // fallback
+                    return const SizedBox();
                   },
                 );
               },
@@ -118,26 +119,26 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context, bool isMobile) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 24.0, vertical: 16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           GestureDetector(onTap: () => _navigateToPage(BillingPage()), child: buildBillCardWidget(bill!, context)),
-          const SizedBox(height: 20),
-          _buildSquareButton("Billing History", Icons.history, HistoryPage()),
+          SizedBox(height: isMobile ? 16 : 20),
+          _buildSquareButton("Billing History", Icons.history, HistoryPage(), isMobile: isMobile),
         ],
       ),
     );
   }
 
-  Widget _buildSquareButton(String text, IconData icon, Widget page) {
+  Widget _buildSquareButton(String text, IconData icon, Widget page, {required bool isMobile}) {
     return GestureDetector(
       onTap: () => _navigateToPage(page),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(isMobile ? 16 : 24),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
@@ -146,9 +147,9 @@ class HomePageState extends State<HomePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 50, color: Colors.blue.shade800),
-            const SizedBox(height: 10),
-            Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Icon(icon, size: isMobile ? 40 : 50, color: Colors.blue.shade800),
+            SizedBox(height: isMobile ? 8 : 10),
+            Text(text, textAlign: TextAlign.center, style: TextStyle(fontSize: isMobile ? 16 : 18, fontWeight: FontWeight.bold)),
           ],
         ),
       ),

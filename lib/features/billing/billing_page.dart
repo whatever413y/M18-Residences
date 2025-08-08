@@ -44,8 +44,9 @@ class BillingPageState extends State<BillingPage> {
         appBar: CustomAppBar(title: "Billing Statement"),
         body: LayoutBuilder(
           builder: (context, constraints) {
-            final screenWidth = MediaQuery.of(context).size.width;
-            final isMobile = screenWidth < 800;
+            final maxWidth = constraints.maxWidth;
+            final isMobile = maxWidth < 800;
+            final contentWidth = isMobile ? maxWidth : 800.0;
 
             return BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
@@ -76,10 +77,10 @@ class BillingPageState extends State<BillingPage> {
                       return Center(
                         child: SingleChildScrollView(
                           child: Container(
-                            width: isMobile ? double.infinity : 800,
-                            padding: const EdgeInsets.all(16.0),
+                            width: contentWidth,
+                            padding: EdgeInsets.symmetric(horizontal: isMobile ? 12.0 : 24.0, vertical: 16.0),
                             constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                            child: _buildBillCard(bill!),
+                            child: _buildBillCard(bill!, isMobile),
                           ),
                         ),
                       );
@@ -96,18 +97,18 @@ class BillingPageState extends State<BillingPage> {
     );
   }
 
-  Widget _buildBillCard(Bill bill) {
+  Widget _buildBillCard(Bill bill, bool isMobile) {
     final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱');
 
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(isMobile ? 16 : 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Latest Bill", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
+            Text("Latest Bill", style: TextStyle(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
             Divider(thickness: 1.2),
             buildReadingItemWidget("Previous Reading", bill.prevReading),
             buildReadingItemWidget("Current Reading", bill.currReading),
@@ -122,17 +123,20 @@ class BillingPageState extends State<BillingPage> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   "Note: ${bill.additionalDescription}",
-                  style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey.shade700),
+                  style: TextStyle(fontSize: isMobile ? 12 : 14, fontStyle: FontStyle.italic, color: Colors.grey.shade700),
                 ),
               ),
 
             Divider(thickness: 1.2),
             buildBillItemWidget("Total Amount", bill.totalAmount, currencyFormat, isTotal: true),
-            const SizedBox(height: 15),
+            SizedBox(height: isMobile ? 12 : 15),
 
             Align(
               alignment: Alignment.centerRight,
-              child: Text("Date Posted: ${DateFormat.yMMMMd().format(bill.createdAt)}", style: TextStyle(fontSize: 18, color: Colors.grey)),
+              child: Text(
+                "Date Posted: ${DateFormat.yMMMMd().format(bill.createdAt)}",
+                style: TextStyle(fontSize: isMobile ? 14 : 18, color: Colors.grey),
+              ),
             ),
           ],
         ),
