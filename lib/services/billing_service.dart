@@ -4,7 +4,7 @@ import 'package:m18_residences/models/billing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BillingService {
-  static final String baseUrl = String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000');
+  static final String baseUrl = String.fromEnvironment('API_URL');
 
   Future<Map<String, String>> _getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();

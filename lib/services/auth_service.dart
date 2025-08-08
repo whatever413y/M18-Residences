@@ -4,7 +4,7 @@ import 'package:m18_residences/models/tenant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String baseUrl = String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000/api');
+  static const String baseUrl = String.fromEnvironment('API_URL');
   static const _tokenKey = 'auth_token';
   static const _tenantIdKey = 'tenant_id';
 
