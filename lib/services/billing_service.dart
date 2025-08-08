@@ -15,7 +15,7 @@ class BillingService {
   Future<List<Bill>> getAllByTenantId(int tenantId) async {
     try {
       final headers = await _getAuthHeaders();
-      final response = await http.get(Uri.parse('$baseUrl/tenant/$tenantId'), headers: headers);
+      final response = await http.get(Uri.parse('$baseUrl/bills/tenant/$tenantId'), headers: headers);
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -31,7 +31,7 @@ class BillingService {
   Future<Bill> getById(int id) async {
     try {
       final headers = await _getAuthHeaders();
-      final response = await http.get(Uri.parse('$baseUrl/$id'), headers: headers);
+      final response = await http.get(Uri.parse('$baseUrl/bills/$id'), headers: headers);
 
       if (response.statusCode == 200) {
         return Bill.fromJson(jsonDecode(response.body));
