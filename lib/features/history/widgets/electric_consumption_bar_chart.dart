@@ -11,14 +11,16 @@ class ElectricConsumptionBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final reversedReadings = completeReadings.reversed.toList();
+
     return BarChart(
       BarChartData(
         maxY: yMax.toDouble(),
         minY: 0,
         barGroups:
-            completeReadings.asMap().entries.map((entry) {
+            reversedReadings.asMap().entries.map((entry) {
               int index = entry.key;
-              int value = entry.value.currReading;
+              int value = entry.value.consumption;
 
               return BarChartGroupData(
                 x: index,
@@ -28,7 +30,7 @@ class ElectricConsumptionBarChart extends StatelessWidget {
                     color: Colors.blue,
                     width: 15,
                     borderRadius: BorderRadius.circular(4),
-                    backDrawRodData: BackgroundBarChartRodData(show: true, toY: yMax.toDouble(), color: Colors.grey.withValues(alpha: 0.2)),
+                    backDrawRodData: BackgroundBarChartRodData(show: true, toY: yMax.toDouble(), color: Colors.grey.withAlpha(50)),
                   ),
                 ],
               );
@@ -49,8 +51,8 @@ class ElectricConsumptionBarChart extends StatelessWidget {
               showTitles: true,
               getTitlesWidget: (value, meta) {
                 int index = value.toInt();
-                if (index >= 0 && index < completeReadings.length) {
-                  DateTime date = completeReadings[index].createdAt;
+                if (index >= 0 && index < reversedReadings.length) {
+                  DateTime date = reversedReadings[index].createdAt;
                   return Text(DateFormat("MMM").format(date).toUpperCase());
                 }
                 return Text('');
