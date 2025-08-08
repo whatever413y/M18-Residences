@@ -81582,7 +81582,7 @@ return A.R(n.r9(),$async$qk)
 case 7:m=c
 i=""+a
 s=8
-return A.R(A.aqJ(A.eH("https://rental-management-system-service.onrender.com/api/tenant/"+i),m),$async$qk)
+return A.R(A.aqJ(A.eH("https://rental-management-system-service.onrender.com/api/bills/tenant/"+i),m),$async$qk)
 case 8:l=c
 if(l.b===200){i=l
 k=B.bl.tm(A.Xu(A.Xh(i.e)).eb(i.w),null)
@@ -81615,7 +81615,7 @@ return A.R(n.r9(),$async$ql)
 case 7:m=c
 j=""+a
 s=8
-return A.R(A.aqJ(A.eH("https://rental-management-system-service.onrender.com/api/"+j),m),$async$ql)
+return A.R(A.aqJ(A.eH("https://rental-management-system-service.onrender.com/api/bills/"+j),m),$async$ql)
 case 8:l=c
 if(l.b===200){j=l
 j=A.avA(B.bl.tm(A.Xu(A.Xh(j.e)).eb(j.w),null))
