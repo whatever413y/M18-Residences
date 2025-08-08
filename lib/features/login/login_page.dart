@@ -34,7 +34,6 @@ class LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.lightTheme;
-    final screenWidth = MediaQuery.of(context).size.width * 0.5;
 
     return Theme(
       data: theme,
@@ -53,6 +52,10 @@ class LoginPageState extends State<LoginPage> {
           },
           child: LayoutBuilder(
             builder: (context, constraints) {
+              final maxWidth = constraints.maxWidth;
+
+              final cardWidth = maxWidth < 500 ? maxWidth * 0.9 : 400.0;
+
               return Stack(
                 children: [
                   Container(
@@ -67,8 +70,8 @@ class LoginPageState extends State<LoginPage> {
                   Center(
                     child: SingleChildScrollView(
                       child: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: screenWidth),
-                        child: Padding(padding: const EdgeInsets.all(16.0), child: _buildCard(context)),
+                        constraints: BoxConstraints(maxWidth: cardWidth),
+                        child: Padding(padding: const EdgeInsets.all(16.0), child: _buildCard(context, maxWidth)),
                       ),
                     ),
                   ),
@@ -81,23 +84,29 @@ class LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildCard(BuildContext context) {
+  Widget _buildCard(BuildContext context, double maxWidth) {
+    final isMobile = maxWidth < 400;
+
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("Welcome", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
-              const SizedBox(height: 10),
-              Text("Enter your Account ID to continue", style: TextStyle(fontSize: 16, color: Colors.grey[600]), textAlign: TextAlign.center),
-              const SizedBox(height: 20),
+              Text("Welcome", style: TextStyle(fontSize: isMobile ? 22 : 26, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
+              SizedBox(height: isMobile ? 8 : 10),
+              Text(
+                "Enter your Account ID to continue",
+                style: TextStyle(fontSize: isMobile ? 14 : 16, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: isMobile ? 16 : 20),
               _buildAccountIDInput(),
-              const SizedBox(height: 20),
+              SizedBox(height: isMobile ? 16 : 20),
               _buildSearchButton(),
             ],
           ),

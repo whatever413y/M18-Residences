@@ -54,69 +54,75 @@ class HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.lightTheme;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bool isMobile = screenWidth < 800;
 
     return Theme(
       data: theme,
       child: Scaffold(
         appBar: CustomAppBar(title: "Billing History"),
-        body: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, authState) {
-            if (authState is Unauthenticated) {
-              return buildErrorWidget(context: context, message: authState.message);
-            }
-            return BlocBuilder<BillingBloc, BillingState>(
-              builder: (context, billingState) {
-                if (billingState is BillingLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (billingState is BillingError) {
-                  return buildErrorWidget(context: context, message: billingState.message);
-                } else if (billingState is BillingsLoaded) {
-                  billingHistory = billingState.bills;
-                  if (billingHistory == null || billingHistory!.isEmpty) {
-                    return buildErrorWidget(
-                      context: context,
-                      message: "No billing data available for this tenant.",
-                      onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
-                    );
-                  }
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxWidth = constraints.maxWidth;
+            final isMobile = maxWidth < 800;
+            final horizontalPadding = isMobile ? 16.0 : 40.0;
 
-                  electricityReadings =
-                      billingHistory!.map((bill) {
-                        return Reading(
-                          id: bill.id,
-                          prevReading: bill.prevReading,
-                          currReading: bill.currReading,
-                          consumption: bill.consumption,
-                          createdAt: bill.createdAt,
-                        );
-                      }).toList();
-
-                  _selectedYear ??=
-                      electricityReadings!.any((r) => r.createdAt.year == DateTime.now().year)
-                          ? DateTime.now().year
-                          : electricityReadings!.first.createdAt.year;
-
-                  return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 40 : 16, vertical: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: SizedBox(width: isMobile ? 150 : 120, child: _buildDropdownYearSelector(context)),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildGraph(context),
-                        const SizedBox(height: 16),
-                        Expanded(child: _buildBillingHistory(context)),
-                      ],
-                    ),
-                  );
+            return BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                if (authState is Unauthenticated) {
+                  return buildErrorWidget(context: context, message: authState.message);
                 }
+                return BlocBuilder<BillingBloc, BillingState>(
+                  builder: (context, billingState) {
+                    if (billingState is BillingLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (billingState is BillingError) {
+                      return buildErrorWidget(context: context, message: billingState.message);
+                    } else if (billingState is BillingsLoaded) {
+                      billingHistory = billingState.bills;
+                      if (billingHistory == null || billingHistory!.isEmpty) {
+                        return buildErrorWidget(
+                          context: context,
+                          message: "No billing data available for this tenant.",
+                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                        );
+                      }
 
-                return const SizedBox();
+                      electricityReadings =
+                          billingHistory!.map((bill) {
+                            return Reading(
+                              id: bill.id,
+                              prevReading: bill.prevReading,
+                              currReading: bill.currReading,
+                              consumption: bill.consumption,
+                              createdAt: bill.createdAt,
+                            );
+                          }).toList();
+
+                      _selectedYear ??=
+                          electricityReadings!.any((r) => r.createdAt.year == DateTime.now().year)
+                              ? DateTime.now().year
+                              : electricityReadings!.first.createdAt.year;
+
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Align(
+                              alignment: Alignment.topRight,
+                              child: SizedBox(width: isMobile ? 150 : 120, child: _buildDropdownYearSelector(context)),
+                            ),
+                            const SizedBox(height: 12),
+                            _buildGraph(context, isMobile),
+                            const SizedBox(height: 16),
+                            Expanded(child: _buildBillingHistory(context, isMobile)),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return const SizedBox();
+                  },
+                );
               },
             );
           },
@@ -149,9 +155,14 @@ class HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  Widget _buildGraph(BuildContext context) {
+  Widget _buildGraph(BuildContext context, bool isMobile) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final graphWidth = screenWidth * 0.8;
+
+    const double minBarWidth = 45;
+    final int barCount = 12;
+    final double minChartWidth = minBarWidth * barCount;
+
+    final double graphWidth = isMobile ? minChartWidth : (screenWidth * 0.8);
 
     return Align(
       alignment: Alignment.center,
@@ -167,6 +178,7 @@ class HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildBarChart(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final filteredReadings = electricityReadings!.where((reading) => reading.createdAt.year == _selectedYear).toList();
 
     final completeReadings = getCompleteReadingsForYear(selectedYear: _selectedYear!, readings: electricityReadings!);
@@ -177,17 +189,20 @@ class HistoryPageState extends State<HistoryPage> {
 
     int yMax = ((maxReading / 50).ceil() * 50);
 
-    return ElectricConsumptionBarChart(completeReadings: completeReadings, yMax: yMax);
+    final double barWidth = screenWidth < 600 ? 20 : 30;
+
+    return ElectricConsumptionBarChart(completeReadings: completeReadings, yMax: yMax, barWidth: barWidth);
   }
 
-  Widget _buildBillingHistory(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width * 0.6;
+  Widget _buildBillingHistory(BuildContext context, bool isMobile) {
+    final maxListWidth = isMobile ? double.infinity : 600.0;
+
     if (billingHistory!.isEmpty) {
       return const Center(child: Text("No billing history available."));
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: isMobile ? 0 : 16),
       itemCount: billingHistory!.length,
       itemBuilder: (context, index) {
         final bill = billingHistory![index];
@@ -198,7 +213,7 @@ class HistoryPageState extends State<HistoryPage> {
           },
           child: Center(
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: screenWidth),
+              constraints: BoxConstraints(maxWidth: maxListWidth),
               child: Padding(padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0), child: buildBillCardWidget(bill, context)),
             ),
           ),

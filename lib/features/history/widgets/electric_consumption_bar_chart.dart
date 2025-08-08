@@ -6,8 +6,9 @@ import 'package:m18_residences/models/reading.dart';
 class ElectricConsumptionBarChart extends StatelessWidget {
   final List<Reading> completeReadings;
   final int yMax;
+  final double barWidth;
 
-  const ElectricConsumptionBarChart({super.key, required this.completeReadings, required this.yMax});
+  const ElectricConsumptionBarChart({super.key, required this.completeReadings, required this.yMax, required this.barWidth});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class ElectricConsumptionBarChart extends StatelessWidget {
                   BarChartRodData(
                     toY: value.toDouble(),
                     color: Colors.blue,
-                    width: 15,
+                    width: barWidth,
                     borderRadius: BorderRadius.circular(4),
                     backDrawRodData: BackgroundBarChartRodData(show: true, toY: yMax.toDouble(), color: Colors.grey.withAlpha(50)),
                   ),
