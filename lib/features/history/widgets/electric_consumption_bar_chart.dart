@@ -13,6 +13,7 @@ class ElectricConsumptionBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reversedReadings = completeReadings.reversed.toList();
+    final yMax = reversedReadings.map((r) => r.consumption).reduce((a, b) => a > b ? a : b);
 
     return BarChart(
       BarChartData(
