@@ -13,6 +13,7 @@ class ElectricConsumptionBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reversedReadings = completeReadings.reversed.toList();
+    final yMax = reversedReadings.map((r) => r.consumption).reduce((a, b) => a > b ? a : b);
 
     return BarChart(
       BarChartData(
@@ -70,7 +71,7 @@ class ElectricConsumptionBarChart extends StatelessWidget {
             fitInsideVertically: true,
             tooltipPadding: EdgeInsets.all(4),
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              return BarTooltipItem("${rod.toY.toStringAsFixed(1)} kWh", TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
+              return BarTooltipItem("${rod.toY.toString()} kWh", TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
             },
           ),
           touchCallback: (FlTouchEvent event, barTouchResponse) {
