@@ -23,7 +23,7 @@ class LoginPageState extends State<LoginPage> {
     });
     if (_formKey.currentState?.validate() ?? false) {
       final inputText = _controller.text.trim();
-      context.read<AuthBloc>().add(LoginWithAccountId(inputText));
+      context.read<AuthBloc>().add(LoginWithAccountId(inputText.toUpperCase()));
     }
   }
 
