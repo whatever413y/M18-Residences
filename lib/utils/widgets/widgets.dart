@@ -6,7 +6,9 @@ import 'package:m18_residences/bloc/auth/auth_event.dart';
 import 'package:m18_residences/features/login/login_page.dart';
 import 'package:m18_residences/models/billing.dart';
 
-Widget buildBillItemWidget(String label, int amount, NumberFormat currencyFormat, {bool isTotal = false}) {
+Widget buildBillItemWidget(String label, int amount, {bool isTotal = false}) {
+  final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱', decimalDigits: 0);
+
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
     child: Row(
@@ -27,13 +29,15 @@ Widget buildBillItemWidget(String label, int amount, NumberFormat currencyFormat
 }
 
 Widget buildReadingItemWidget(String label, int value) {
+  final numberFormat = NumberFormat.decimalPattern();
+
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 2),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
-        Text("$value kWh", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        Text("${numberFormat.format(value)} kWh", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
       ],
     ),
   );
@@ -62,8 +66,6 @@ Widget buildErrorWidget({required BuildContext context, required String message,
 }
 
 Widget buildBillCardWidget(Bill bill, BuildContext context) {
-  final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱');
-
   return Card(
     elevation: 4,
     margin: EdgeInsets.symmetric(vertical: 8),
@@ -80,7 +82,7 @@ Widget buildBillCardWidget(Bill bill, BuildContext context) {
           Divider(),
           buildReadingItemWidget("Consumption", bill.consumption),
           Divider(),
-          buildBillItemWidget("Total Amount", bill.totalAmount, currencyFormat, isTotal: true),
+          buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),
         ],
       ),
     ),

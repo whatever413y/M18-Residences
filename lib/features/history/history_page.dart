@@ -223,8 +223,6 @@ class HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildBillDialog(BuildContext context, Bill bill) {
-    final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱');
-
     return AlertDialog(
       title: const Text("Billing Details"),
       content: SingleChildScrollView(
@@ -240,9 +238,9 @@ class HistoryPageState extends State<HistoryPage> {
 
             const Divider(),
 
-            buildBillItemWidget("Room Charges", bill.roomCharges, currencyFormat),
-            buildBillItemWidget("Electric Charges", bill.electricCharges, currencyFormat),
-            buildBillItemWidget("Additional Charges", bill.additionalCharges, currencyFormat),
+            buildBillItemWidget("Room Charges", bill.roomCharges),
+            buildBillItemWidget("Electric Charges", bill.electricCharges),
+            buildBillItemWidget("Additional Charges", bill.additionalCharges),
 
             if (bill.additionalDescription.isNotEmpty)
               Padding(
@@ -252,7 +250,7 @@ class HistoryPageState extends State<HistoryPage> {
 
             const Divider(),
 
-            buildBillItemWidget("Total Amount", bill.totalAmount, currencyFormat, isTotal: true),
+            buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),
           ],
         ),
       ),

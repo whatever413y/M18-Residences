@@ -98,8 +98,6 @@ class BillingPageState extends State<BillingPage> {
   }
 
   Widget _buildBillCard(Bill bill, bool isMobile) {
-    final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱');
-
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -114,9 +112,9 @@ class BillingPageState extends State<BillingPage> {
             buildReadingItemWidget("Current Reading", bill.currReading),
             buildReadingItemWidget("Consumption", bill.consumption),
             Divider(thickness: 1.2),
-            buildBillItemWidget("Room Charges", bill.roomCharges, currencyFormat),
-            buildBillItemWidget("Electric Charges", bill.electricCharges, currencyFormat),
-            buildBillItemWidget("Additional Charges", bill.additionalCharges, currencyFormat),
+            buildBillItemWidget("Room Charges", bill.roomCharges),
+            buildBillItemWidget("Electric Charges", bill.electricCharges),
+            buildBillItemWidget("Additional Charges", bill.additionalCharges),
 
             if (bill.additionalDescription.isNotEmpty)
               Padding(
@@ -128,7 +126,7 @@ class BillingPageState extends State<BillingPage> {
               ),
 
             Divider(thickness: 1.2),
-            buildBillItemWidget("Total Amount", bill.totalAmount, currencyFormat, isTotal: true),
+            buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),
             SizedBox(height: isMobile ? 12 : 15),
 
             Align(
