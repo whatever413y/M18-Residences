@@ -17,12 +17,12 @@ class BillingService {
       final headers = await _getAuthHeaders();
       final response = await http.get(Uri.parse('$baseUrl/tenant/$tenantId'), headers: headers);
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => Bill.fromJson(json)).toList();
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load bills for tenant $tenantId: ${response.statusCode} - ${response.body}');
       }
 
-      return [];
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Bill.fromJson(json)).toList();
     } catch (e) {
       print('Error fetching bills: $e');
       return [];

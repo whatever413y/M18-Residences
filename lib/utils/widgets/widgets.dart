@@ -14,7 +14,16 @@ Widget buildBillItemWidget(String label, int amount, {bool isTotal = false}) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: isTotal ? 18 : 16, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal)),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(fontSize: isTotal ? 18 : 16, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal),
+            softWrap: true,
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
         Text(
           currencyFormat.format(amount),
           style: TextStyle(
@@ -36,7 +45,8 @@ Widget buildReadingItemWidget(String label, int value) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+        Expanded(child: Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[700]), softWrap: true)),
+        const SizedBox(width: 8),
         Text("${numberFormat.format(value)} kWh", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
       ],
     ),
