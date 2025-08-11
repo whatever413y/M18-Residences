@@ -51,7 +51,14 @@ class HomePageState extends State<HomePage> {
     return Theme(
       data: theme,
       child: Scaffold(
-        appBar: CustomAppBar(title: "Welcome ${tenant.name}", logoutOnBack: true),
+        appBar: CustomAppBar(
+          title: "Welcome ${tenant.name}",
+          logoutOnBack: true,
+          showRefresh: true,
+          onRefresh: () {
+            billingBloc.add(FetchBillingByTenantId(tenant.id));
+          },
+        ),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final maxWidth = constraints.maxWidth;

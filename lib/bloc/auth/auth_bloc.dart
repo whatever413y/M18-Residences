@@ -30,7 +30,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (token == null || _cachedTenant == null) {
         return emit(Unauthenticated('Token or user missing'));
       }
-
       emit(Authenticated(token: token, tenant: tenant));
     } catch (e) {
       emit(Unauthenticated('An error occurred while checking authentication status: $e'));

@@ -41,7 +41,13 @@ class BillingPageState extends State<BillingPage> {
     return Theme(
       data: theme,
       child: Scaffold(
-        appBar: CustomAppBar(title: "Billing Statement"),
+        appBar: CustomAppBar(
+          title: "Billing Statement",
+          showRefresh: true,
+          onRefresh: () {
+            billingBloc.add(FetchBillingByTenantId(tenant.id));
+          },
+        ),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final maxWidth = constraints.maxWidth;

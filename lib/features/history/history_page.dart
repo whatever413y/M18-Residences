@@ -58,7 +58,13 @@ class HistoryPageState extends State<HistoryPage> {
     return Theme(
       data: theme,
       child: Scaffold(
-        appBar: CustomAppBar(title: "Billing History"),
+        appBar: CustomAppBar(
+          title: "Billing History",
+          showRefresh: true,
+          onRefresh: () {
+            billingBloc.add(FetchBillingsByTenantId(tenant.id));
+          },
+        ),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final maxWidth = constraints.maxWidth;
