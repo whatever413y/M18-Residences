@@ -31,7 +31,7 @@ class BillingPageState extends State<BillingPage> {
     authBloc.add(CheckAuthStatus());
     tenant = authBloc.cachedTenant!;
     billingBloc = context.read<BillingBloc>();
-    billingBloc.add(FetchBillingByTenantId(tenant.id!));
+    billingBloc.add(FetchBillingByTenantId(tenant.id));
   }
 
   @override
@@ -41,7 +41,13 @@ class BillingPageState extends State<BillingPage> {
     return Theme(
       data: theme,
       child: Scaffold(
-        appBar: CustomAppBar(title: "Billing Statement"),
+        appBar: CustomAppBar(
+          title: "Billing Statement",
+          showRefresh: true,
+          onRefresh: () {
+            billingBloc.add(FetchBillingByTenantId(tenant.id));
+          },
+        ),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final maxWidth = constraints.maxWidth;
@@ -62,7 +68,7 @@ class BillingPageState extends State<BillingPage> {
                       return buildErrorWidget(
                         context: context,
                         message: billingState.message,
-                        onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                        onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
                       );
                     } else if (billingState is BillingLoaded) {
                       bill = billingState.bill;
@@ -70,7 +76,7 @@ class BillingPageState extends State<BillingPage> {
                         return buildErrorWidget(
                           context: context,
                           message: "No billing data available for this tenant.",
-                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
                         );
                       }
 
@@ -98,6 +104,7 @@ class BillingPageState extends State<BillingPage> {
   }
 
   Widget _buildBillCard(Bill bill, bool isMobile) {
+    final hasAdditionalCharges = (bill.additionalCharges ?? []).any((charge) => charge.amount != 0);
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -114,21 +121,21 @@ class BillingPageState extends State<BillingPage> {
             Divider(thickness: 1.2),
             buildBillItemWidget("Room Charges", bill.roomCharges),
             buildBillItemWidget("Electric Charges", bill.electricCharges),
-            buildBillItemWidget("Additional Charges", bill.additionalCharges),
-
-            if (bill.additionalDescription.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  "Note: ${bill.additionalDescription}",
-                  style: TextStyle(fontSize: isMobile ? 12 : 14, fontStyle: FontStyle.italic, color: Colors.grey.shade700),
-                ),
+            if (hasAdditionalCharges) ...[
+              const SizedBox(height: 8),
+              Text("Additional Charges", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade800)),
+              const SizedBox(height: 6),
+              Column(
+                children:
+                    bill.additionalCharges!.where((charge) => charge.amount != 0).map((charge) {
+                      final desc = charge.description.isNotEmpty ? charge.description : '-';
+                      return buildBillItemWidget(desc, charge.amount);
+                    }).toList(),
               ),
-
+            ],
             Divider(thickness: 1.2),
             buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),
             SizedBox(height: isMobile ? 12 : 15),
-
             Align(
               alignment: Alignment.centerRight,
               child: Text(

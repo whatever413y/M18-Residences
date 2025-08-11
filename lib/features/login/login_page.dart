@@ -47,7 +47,9 @@ class LoginPageState extends State<LoginPage> {
               _formKey.currentState?.validate();
             } else if (state is Authenticated) {
               _controller.clear();
-              _navigateToPage(HomePage());
+              if (Navigator.of(context).canPop() == false) {
+                _navigateToPage(HomePage());
+              }
             }
           },
           child: LayoutBuilder(

@@ -22,19 +22,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return emit(Unauthenticated('Session has expired. Please try again'));
       }
 
+      final token = await authService.getSavedToken();
       final tenantId = await authService.getSavedTenantId();
-      if (tenantId == null) {
-        return emit(Unauthenticated('Tenant ID is missing. Please try again.'));
-      }
-
-      final tenant = _cachedTenant ?? await authService.getByTenantId(int.parse(tenantId));
+      final tenant = await authService.getByTenantId(int.parse(tenantId!));
       _cachedTenant = tenant;
 
-      final token = await authService.getSavedToken();
-      if (token == null) {
-        return emit(Unauthenticated('Token is unexpectedly missing. Please try again.'));
+      if (token == null || _cachedTenant == null) {
+        return emit(Unauthenticated('Token or user missing'));
       }
-
       emit(Authenticated(token: token, tenant: tenant));
     } catch (e) {
       emit(Unauthenticated('An error occurred while checking authentication status: $e'));

@@ -32,14 +32,14 @@ class HomePageState extends State<HomePage> {
     authBloc.add(CheckAuthStatus());
     tenant = authBloc.cachedTenant!;
     billingBloc = context.read<BillingBloc>();
-    billingBloc.add(FetchBillingByTenantId(tenant.id!));
+    billingBloc.add(FetchBillingByTenantId(tenant.id));
   }
 
   void _navigateToPage(Widget page) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page)).then((updated) {
       if (updated == true) {
         authBloc.add(CheckAuthStatus());
-        billingBloc.add(FetchBillingByTenantId(tenant.id!));
+        billingBloc.add(FetchBillingByTenantId(tenant.id));
       }
     });
   }
@@ -51,7 +51,14 @@ class HomePageState extends State<HomePage> {
     return Theme(
       data: theme,
       child: Scaffold(
-        appBar: CustomAppBar(title: "Welcome ${tenant.name}", logoutOnBack: true),
+        appBar: CustomAppBar(
+          title: "Welcome ${tenant.name}",
+          logoutOnBack: true,
+          showRefresh: true,
+          onRefresh: () {
+            billingBloc.add(FetchBillingByTenantId(tenant.id));
+          },
+        ),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final maxWidth = constraints.maxWidth;
@@ -72,7 +79,7 @@ class HomePageState extends State<HomePage> {
                       return buildErrorWidget(
                         context: context,
                         message: billingState.message,
-                        onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                        onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
                       );
                     } else if (billingState is BillingLoaded) {
                       bill = billingState.bill;
@@ -80,7 +87,7 @@ class HomePageState extends State<HomePage> {
                         return buildErrorWidget(
                           context: context,
                           message: "No billing data available for this tenant.",
-                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
                         );
                       }
 
