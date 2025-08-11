@@ -17,7 +17,6 @@ class BillingService {
     try {
       final headers = await _getAuthHeaders();
       final response = await http.get(Uri.parse('$baseUrl/tenant/$tenantId'), headers: headers);
-
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => Bill.fromJson(json)).toList();

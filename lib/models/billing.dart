@@ -1,11 +1,12 @@
+import 'package:m18_residences/models/additional_charrges.dart';
+
 class Bill {
   final int id;
   final int tenantId;
   final int readingId;
   final int roomCharges;
   final int electricCharges;
-  final int additionalCharges;
-  final String additionalDescription;
+  final List<AdditionalCharge>? additionalCharges;
   final int totalAmount;
   final DateTime createdAt;
   final int currReading;
@@ -18,13 +19,12 @@ class Bill {
     required this.readingId,
     required this.roomCharges,
     required this.electricCharges,
-    required this.additionalCharges,
-    required this.additionalDescription,
     required this.totalAmount,
     required this.createdAt,
     required this.currReading,
     required this.prevReading,
     required this.consumption,
+    this.additionalCharges,
   });
 
   factory Bill.fromJson(Map<String, dynamic> json) {
@@ -36,8 +36,8 @@ class Bill {
       tenantId: json['tenantId'],
       roomCharges: json['roomCharges'],
       electricCharges: json['electricCharges'],
-      additionalCharges: json['additionalCharges'],
-      additionalDescription: json['additionalDescription'] ?? '',
+      additionalCharges:
+          json['additionalCharges'] != null ? (json['additionalCharges'] as List).map((e) => AdditionalCharge.fromJson(e)).toList() : null,
       totalAmount: json['totalAmount'],
       createdAt: DateTime.parse(json['createdAt']),
       currReading: reading['currReading'] ?? 0,

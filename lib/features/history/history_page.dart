@@ -37,7 +37,7 @@ class HistoryPageState extends State<HistoryPage> {
     authBloc.add(CheckAuthStatus());
     tenant = authBloc.cachedTenant!;
     billingBloc = context.read<BillingBloc>();
-    billingBloc.add(FetchBillingsByTenantId(tenant.id!));
+    billingBloc.add(FetchBillingsByTenantId(tenant.id));
   }
 
   List<Reading> getCompleteReadingsForYear({required int selectedYear, required List<Reading> readings}) {
@@ -82,7 +82,7 @@ class HistoryPageState extends State<HistoryPage> {
                         return buildErrorWidget(
                           context: context,
                           message: "No billing data available for this tenant.",
-                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id!)),
+                          onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
                         );
                       }
 
@@ -223,6 +223,8 @@ class HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildBillDialog(BuildContext context, Bill bill) {
+    final hasAdditionalCharges = (bill.additionalCharges ?? []).any((charge) => charge.amount != 0);
+
     return AlertDialog(
       title: const Text("Billing Details"),
       content: SingleChildScrollView(
@@ -240,14 +242,19 @@ class HistoryPageState extends State<HistoryPage> {
 
             buildBillItemWidget("Room Charges", bill.roomCharges),
             buildBillItemWidget("Electric Charges", bill.electricCharges),
-            buildBillItemWidget("Additional Charges", bill.additionalCharges),
 
-            if (bill.additionalDescription.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text("Note: ${bill.additionalDescription}", style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 14)),
+            if (hasAdditionalCharges) ...[
+              const SizedBox(height: 8),
+              Text("Additional Charges", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade800)),
+              const SizedBox(height: 6),
+              Column(
+                children:
+                    bill.additionalCharges!.where((charge) => charge.amount != 0).map((charge) {
+                      final desc = charge.description.isNotEmpty ? charge.description : '-';
+                      return buildBillItemWidget(desc, charge.amount);
+                    }).toList(),
               ),
-
+            ],
             const Divider(),
 
             buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),

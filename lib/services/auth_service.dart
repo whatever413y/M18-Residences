@@ -74,8 +74,7 @@ class AuthService {
 
   Future<Tenant> getByTenantId(int id) async {
     final String url = '${dotenv.env['API_URL']}/tenants/$id';
-    final response = await http.get(Uri.parse(url));
-
+    final response = await http.get(Uri.parse(url), headers: await _getAuthHeaders());
     if (response.statusCode == 200) {
       return Tenant.fromJson(jsonDecode(response.body));
     } else {
