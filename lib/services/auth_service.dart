@@ -4,36 +4,40 @@ import 'package:m18_residences/models/tenant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String baseUrl = String.fromEnvironment('API_URL');
+  static final String baseUrl = String.fromEnvironment('API_URL');
+
   static const _tokenKey = 'auth_token';
   static const _tenantIdKey = 'tenant_id';
 
   Tenant? _cachedTenant;
-
   Tenant? get cachedTenant => _cachedTenant;
 
   Future<String?> login(String username) async {
-    final url = Uri.parse('$baseUrl/auth/login');
+    try {
+      final url = Uri.parse('$baseUrl/auth/login');
+      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'name': username}));
 
-    final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'name': username}));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['token'] as String?;
+        final tenantJson = data['tenant'] as Map<String, dynamic>?;
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final token = data['token'] as String?;
-      final tenantJson = data['tenant'] as Map<String, dynamic>;
+        if (token == null || token.isEmpty || tenantJson == null) {
+          return null;
+        }
 
-      if (token == null || token.isEmpty) {
-        throw Exception('Token is missing from login response');
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_tokenKey, token);
+        await prefs.setString(_tenantIdKey, tenantJson['id'].toString());
+
+        _cachedTenant = Tenant.fromJson(tenantJson);
+        return token;
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenKey, token);
-      await prefs.setString(_tenantIdKey, tenantJson['id'].toString());
-
-      _cachedTenant = Tenant.fromJson(tenantJson);
-      return token;
-    } else {
-      throw Exception('Login failed: ${response.body}');
+      return null;
+    } catch (e) {
+      print('Error logging in: $e');
+      return null;
     }
   }
 
@@ -46,7 +50,7 @@ class AuthService {
 
   Future<Map<String, String>> _getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final token = prefs.getString(_tokenKey);
     return {'Content-Type': 'application/json', if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token'};
   }
 
@@ -63,23 +67,29 @@ class AuthService {
   Future<bool> isAuthenticated() async {
     final token = await getSavedToken();
     if (token == null || token.isEmpty) return false;
-    final headers = await _getAuthHeaders();
+
     try {
+      final headers = await _getAuthHeaders();
       final response = await http.get(Uri.parse('$baseUrl/auth/validate-token'), headers: headers);
       return response.statusCode == 200;
     } catch (e) {
-      throw Exception('Error validating token: $e');
+      print('Error validating token: $e');
+      return false;
     }
   }
 
-  Future<Tenant> getByTenantId(int id) async {
-    final String url = '$baseUrl/tenants/$id';
-    final response = await http.get(Uri.parse(url));
+  Future<Tenant?> getByTenantId(int id) async {
+    try {
+      final url = Uri.parse('$baseUrl/tenants/$id');
+      final response = await http.get(url, headers: await _getAuthHeaders());
 
-    if (response.statusCode == 200) {
-      return Tenant.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to load tenant with id $id');
+      if (response.statusCode == 200) {
+        return Tenant.fromJson(jsonDecode(response.body));
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching tenant by ID: $e');
+      return null;
     }
   }
 }
