@@ -81678,7 +81678,7 @@ return A.M(n.rb(),$async$qk)
 case 7:m=c
 i=""+a
 s=8
-return A.M(A.ar_(A.eI("https://rental-management-system-service.onrender.com/api/tenant/"+i),m),$async$qk)
+return A.M(A.ar_(A.eI("https://rental-management-system-service.onrender.com/api/bills/tenant/"+i),m),$async$qk)
 case 8:l=c
 if(l.b!==200){i=A.e5("Failed to load bills for tenant "+i+": "+l.b+" - "+l.gE_())
 throw A.i(i)}i=l
