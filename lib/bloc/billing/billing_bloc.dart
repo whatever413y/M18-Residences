@@ -13,23 +13,25 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
 
   Future<void> _onFetchBillingsByTenantId(FetchBillingsByTenantId event, Emitter<BillingState> emit) async {
     emit(BillingLoading());
-    await Future.delayed(Duration(seconds: 1));
-    try {
-      final bills = await billingService.getAllByTenantId(event.tenantId);
+    await Future.delayed(const Duration(seconds: 1));
+    final bills = await billingService.getAllByTenantId(event.tenantId);
+
+    if (bills.isEmpty) {
+      emit(BillingError('No bills found for tenant.'));
+    } else {
       emit(BillingsLoaded(bills));
-    } catch (e) {
-      emit(BillingError(e.toString()));
     }
   }
 
   Future<void> _onFetchBillingByTenantId(FetchBillingByTenantId event, Emitter<BillingState> emit) async {
     emit(BillingLoading());
-    await Future.delayed(Duration(seconds: 1));
-    try {
-      final bill = await billingService.getById(event.tenantId);
+    await Future.delayed(const Duration(seconds: 1));
+    final bill = await billingService.getById(event.tenantId);
+
+    if (bill == null) {
+      emit(BillingError('Bill not found.'));
+    } else {
       emit(BillingLoaded(bill));
-    } catch (e) {
-      emit(BillingError(e.toString()));
     }
   }
 }

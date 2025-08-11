@@ -17,29 +17,32 @@ class BillingService {
     try {
       final headers = await _getAuthHeaders();
       final response = await http.get(Uri.parse('$baseUrl/tenant/$tenantId'), headers: headers);
+
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => Bill.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load bills for tenant $tenantId');
       }
+
+      return [];
     } catch (e) {
-      throw Exception('Error fetching bills: $e');
+      print('Error fetching bills: $e');
+      return [];
     }
   }
 
-  Future<Bill> getById(int id) async {
+  Future<Bill?> getById(int id) async {
     try {
       final headers = await _getAuthHeaders();
       final response = await http.get(Uri.parse('$baseUrl/$id'), headers: headers);
 
       if (response.statusCode == 200) {
         return Bill.fromJson(jsonDecode(response.body));
-      } else {
-        throw Exception('Failed to load bill with id $id');
       }
+
+      return null;
     } catch (e) {
-      throw Exception('Error fetching bill: $e');
+      print('Error fetching bill by ID: $e');
+      return null;
     }
   }
 }
