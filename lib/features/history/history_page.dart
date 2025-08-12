@@ -230,44 +230,71 @@ class HistoryPageState extends State<HistoryPage> {
 
   Widget _buildBillDialog(BuildContext context, Bill bill) {
     final hasAdditionalCharges = (bill.additionalCharges ?? []).any((charge) => charge.amount != 0);
+    final isWide = MediaQuery.of(context).size.width > 600;
 
     return AlertDialog(
-      title: const Text("Billing Details"),
-      content: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Posting Date: ${DateFormat.yMMMMd().format(bill.createdAt)}"),
-            const Divider(),
-
-            buildReadingItemWidget("Previous Reading", bill.prevReading),
-            buildReadingItemWidget("Current Reading", bill.currReading),
-            buildReadingItemWidget("Consumption", bill.consumption),
-
-            const Divider(),
-
-            buildBillItemWidget("Room Charges", bill.roomCharges),
-            buildBillItemWidget("Electric Charges", bill.electricCharges),
-
-            if (hasAdditionalCharges) ...[
-              const SizedBox(height: 8),
-              Text("Additional Charges", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade800)),
-              const SizedBox(height: 6),
-              Column(
-                children:
-                    bill.additionalCharges!.where((charge) => charge.amount != 0).map((charge) {
-                      final desc = charge.description.isNotEmpty ? charge.description : '-';
-                      return buildBillItemWidget(desc, charge.amount);
-                    }).toList(),
+      title: const Text("Billing Details", style: TextStyle(fontWeight: FontWeight.bold)),
+      contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+      content: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity, maxHeight: MediaQuery.of(context).size.height * 0.8),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: Text(
+                      "Posting Date: ${DateFormat.yMMMMd().format(bill.createdAt)}",
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        bill.paid ? "Paid" : "Unpaid",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: bill.paid ? Colors.green : Colors.red),
+                      ),
+                      if (bill.receiptUrl != null) ...[const SizedBox(height: 8), buildReceipt(context, bill)],
+                    ],
+                  ),
+                ],
               ),
-            ],
-            const Divider(),
+              const SizedBox(height: 12),
+              const Divider(thickness: 1.2),
+              const SizedBox(height: 12),
 
-            buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),
-          ],
+              buildReadingItemWidget("Previous Reading", bill.prevReading),
+              const SizedBox(height: 8),
+              buildReadingItemWidget("Current Reading", bill.currReading),
+              const SizedBox(height: 8),
+              buildReadingItemWidget("Consumption", bill.consumption),
+
+              const SizedBox(height: 12),
+              const Divider(thickness: 1.2),
+              const SizedBox(height: 12),
+
+              buildBillItemWidget("Room Charges", bill.roomCharges),
+              const SizedBox(height: 8),
+              buildBillItemWidget("Electric Charges", bill.electricCharges),
+
+              if (hasAdditionalCharges) ...buildChargesDetails(bill.additionalCharges!),
+
+              const SizedBox(height: 12),
+              const Divider(thickness: 1.2),
+              const SizedBox(height: 12),
+
+              // Total
+              buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),
+            ],
+          ),
         ),
       ),
-      actions: [TextButton(child: const Text("Close"), onPressed: () => Navigator.of(context).pop())],
+      actions: [TextButton(child: const Text("Close", style: TextStyle(fontWeight: FontWeight.bold)), onPressed: () => Navigator.of(context).pop())],
     );
   }
 }

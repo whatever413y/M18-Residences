@@ -105,6 +105,7 @@ class BillingPageState extends State<BillingPage> {
 
   Widget _buildBillCard(Bill bill, bool isMobile) {
     final hasAdditionalCharges = (bill.additionalCharges ?? []).any((charge) => charge.amount != 0);
+
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -113,29 +114,43 @@ class BillingPageState extends State<BillingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Latest Bill", style: TextStyle(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Latest Bill", style: TextStyle(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      bill.paid ? "Paid" : "Unpaid",
+                      style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.w600, color: bill.paid ? Colors.green : Colors.red),
+                    ),
+                    if (bill.receiptUrl != null) ...[const SizedBox(height: 8), buildReceipt(context, bill)],
+                  ],
+                ),
+              ],
+            ),
+
             Divider(thickness: 1.2),
+
             buildReadingItemWidget("Previous Reading", bill.prevReading),
             buildReadingItemWidget("Current Reading", bill.currReading),
             buildReadingItemWidget("Consumption", bill.consumption),
+
             Divider(thickness: 1.2),
+
             buildBillItemWidget("Room Charges", bill.roomCharges),
             buildBillItemWidget("Electric Charges", bill.electricCharges),
-            if (hasAdditionalCharges) ...[
-              const SizedBox(height: 8),
-              Text("Additional Charges", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade800)),
-              const SizedBox(height: 6),
-              Column(
-                children:
-                    bill.additionalCharges!.where((charge) => charge.amount != 0).map((charge) {
-                      final desc = charge.description.isNotEmpty ? charge.description : '-';
-                      return buildBillItemWidget(desc, charge.amount);
-                    }).toList(),
-              ),
-            ],
+
+            if (hasAdditionalCharges) ...buildChargesDetails(bill.additionalCharges!),
+
             Divider(thickness: 1.2),
+
             buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),
+
             SizedBox(height: isMobile ? 12 : 15),
+
             Align(
               alignment: Alignment.centerRight,
               child: Text(

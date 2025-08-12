@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:m18_residences/bloc/auth/auth_bloc.dart';
 import 'package:m18_residences/bloc/auth/auth_event.dart';
 import 'package:m18_residences/features/login/login_page.dart';
+import 'package:m18_residences/models/additional_charrges.dart';
 import 'package:m18_residences/models/billing.dart';
 
 Widget buildBillItemWidget(String label, int amount, {bool isTotal = false}) {
@@ -85,9 +86,18 @@ Widget buildBillCardWidget(Bill bill, BuildContext context) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Posting Date: ${DateFormat.yMMMMd().format(bill.createdAt)}",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Posting Date: ${DateFormat.yMMMMd().format(bill.createdAt)}",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
+              ),
+              Text(
+                bill.paid ? "Paid" : "Unpaid",
+                style: TextStyle(fontSize: 14, color: bill.paid ? Colors.green : Colors.red, fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
           Divider(),
           buildReadingItemWidget("Consumption", bill.consumption),
@@ -95,6 +105,80 @@ Widget buildBillCardWidget(Bill bill, BuildContext context) {
           buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),
         ],
       ),
+    ),
+  );
+}
+
+Widget buildReceipt(BuildContext context, Bill bill) {
+  return Padding(
+    padding: const EdgeInsets.only(top: 8),
+    child: InkWell(
+      onTap: () {
+        if (bill.receiptUrl != null) {
+          showDialog(
+            context: context,
+            builder:
+                (context) => Dialog(
+                  child: InteractiveViewer(
+                    child: Image.network(
+                      bill.receiptUrl!,
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return SizedBox(width: 200, height: 200, child: Center(child: CircularProgressIndicator()));
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Padding(padding: EdgeInsets.all(20), child: Text('Failed to load image'));
+                      },
+                    ),
+                  ),
+                ),
+          );
+        }
+      },
+      child: Text('Receipt', style: const TextStyle(color: Colors.blue)),
+    ),
+  );
+}
+
+List<Widget> buildChargesDetails(List<AdditionalCharge> charges) {
+  final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱', decimalDigits: 0);
+  final additionalCharges = charges.where((c) => c.amount >= 0).toList();
+  final discounts = charges.where((c) => c.amount < 0).toList();
+
+  List<Widget> detailRows = [];
+
+  if (additionalCharges.isNotEmpty) {
+    detailRows.add(const SizedBox(height: 12));
+    detailRows.add(const Text('Additional Charges', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16)));
+    detailRows.add(const SizedBox(height: 8));
+
+    for (final charge in additionalCharges) {
+      detailRows.add(buildChargeRow(charge.description, currencyFormat.format(charge.amount)));
+    }
+  }
+
+  if (discounts.isNotEmpty) {
+    detailRows.add(const SizedBox(height: 16));
+    detailRows.add(const Text('Discounts', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16)));
+    detailRows.add(const SizedBox(height: 8));
+
+    for (final charge in discounts) {
+      detailRows.add(buildChargeRow(charge.description, currencyFormat.format(charge.amount.abs())));
+    }
+  }
+
+  return detailRows;
+}
+
+Widget buildChargeRow(String description, String amount) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 2),
+    child: Row(
+      children: [
+        Expanded(child: Text(description.isNotEmpty ? description : '-', style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey))),
+        Text(amount),
+      ],
     ),
   );
 }

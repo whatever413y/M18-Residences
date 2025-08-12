@@ -12,6 +12,8 @@ class Bill {
   final int currReading;
   final int prevReading;
   final int consumption;
+  final bool paid;
+  final String? receiptUrl;
 
   Bill({
     required this.id,
@@ -24,6 +26,8 @@ class Bill {
     required this.currReading,
     required this.prevReading,
     required this.consumption,
+    required this.paid,
+    this.receiptUrl,
     this.additionalCharges,
   });
 
@@ -43,6 +47,8 @@ class Bill {
       currReading: reading['currReading'] ?? 0,
       prevReading: reading['prevReading'] ?? 0,
       consumption: reading['consumption'] ?? 0,
+      paid: json['paid'],
+      receiptUrl: json['receiptUrl'],
     );
   }
 }
