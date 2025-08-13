@@ -54,7 +54,6 @@ class HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.lightTheme;
-
     return Theme(
       data: theme,
       child: Scaffold(
@@ -107,25 +106,20 @@ class HistoryPageState extends State<HistoryPage> {
                           electricityReadings!.any((r) => r.createdAt.year == DateTime.now().year)
                               ? DateTime.now().year
                               : electricityReadings!.first.createdAt.year;
-
+                      final years = electricityReadings!.map((e) => e.createdAt.year).toSet().toList()..sort((a, b) => b.compareTo(a));
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Align(
-                              alignment: Alignment.topRight,
-                              child: SizedBox(width: isMobile ? 150 : 120, child: _buildDropdownYearSelector(context)),
-                            ),
-                            const SizedBox(height: 12),
+                            if (years.length > 1) SizedBox(width: isMobile ? 150 : 120, child: _buildDropdownYearSelector(context, years)),
                             _buildGraph(context, isMobile),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 8),
                             Expanded(child: _buildBillingHistory(context, isMobile)),
                           ],
                         ),
                       );
                     }
-
                     return const SizedBox();
                   },
                 );
@@ -137,15 +131,13 @@ class HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  Widget _buildDropdownYearSelector(BuildContext context) {
-    final years = electricityReadings!.map((e) => e.createdAt.year).toSet().toList()..sort((a, b) => b.compareTo(a));
-
+  Widget _buildDropdownYearSelector(BuildContext context, List<int> years) {
     return Align(
       alignment: Alignment.topRight,
       child: Padding(
-        padding: const EdgeInsets.only(right: 12.0, top: 8.0),
+        padding: const EdgeInsets.only(right: 12.0),
         child: SizedBox(
-          width: 120,
+          width: 100,
           child: CustomDropdownForm<int>(
             label: 'Year',
             value: _selectedYear,
@@ -163,17 +155,15 @@ class HistoryPageState extends State<HistoryPage> {
 
   Widget _buildGraph(BuildContext context, bool isMobile) {
     final screenWidth = MediaQuery.of(context).size.width;
-
-    const double minBarWidth = 45;
+    const double minBarWidth = 40;
     final int barCount = 12;
     final double minChartWidth = minBarWidth * barCount;
-
     final double graphWidth = isMobile ? minChartWidth : (screenWidth * 0.8);
 
     return Align(
       alignment: Alignment.center,
       child: SizedBox(
-        height: 250,
+        height: 150,
         width: graphWidth,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -195,13 +185,13 @@ class HistoryPageState extends State<HistoryPage> {
 
     int yMax = ((maxReading / 50).ceil() * 50);
 
-    final double barWidth = screenWidth < 600 ? 20 : 30;
+    final double barWidth = screenWidth < 800 ? 20 : 30;
 
     return ElectricConsumptionBarChart(completeReadings: completeReadings, yMax: yMax, barWidth: barWidth);
   }
 
   Widget _buildBillingHistory(BuildContext context, bool isMobile) {
-    final maxListWidth = isMobile ? double.infinity : 600.0;
+    final maxListWidth = isMobile ? double.infinity : 800.0;
 
     if (billingHistory!.isEmpty) {
       return const Center(child: Text("No billing history available."));
@@ -230,13 +220,13 @@ class HistoryPageState extends State<HistoryPage> {
 
   Widget _buildBillDialog(BuildContext context, Bill bill) {
     final hasAdditionalCharges = (bill.additionalCharges ?? []).any((charge) => charge.amount != 0);
-    final isWide = MediaQuery.of(context).size.width > 600;
+    final isWide = MediaQuery.of(context).size.width > 800;
 
     return AlertDialog(
       title: const Text("Billing Details", style: TextStyle(fontWeight: FontWeight.bold)),
       contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       content: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity, maxHeight: MediaQuery.of(context).size.height * 0.8),
+        constraints: BoxConstraints(maxWidth: isWide ? 800 : double.infinity, maxHeight: MediaQuery.of(context).size.height * 0.8),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
