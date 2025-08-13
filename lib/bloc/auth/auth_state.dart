@@ -37,3 +37,22 @@ class AuthError extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+class ReceiptUrlLoading extends AuthState {}
+
+class ReceiptUrlLoaded extends AuthState {
+  final String url;
+  ReceiptUrlLoaded(this.url);
+
+  @override
+  List<Object?> get props => [url];
+}
+
+class ReceiptUrlError extends AuthState {
+  final String message;
+
+  ReceiptUrlError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

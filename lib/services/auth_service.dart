@@ -89,4 +89,17 @@ class AuthService {
       return null;
     }
   }
+
+  Future<String?> fetchReceiptUrl(String tenantId, String filename) async {
+    final headers = await _getAuthHeaders();
+    final url = Uri.parse('${dotenv.env['API_URL']}/auth/receipts/$tenantId/$filename');
+    final response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['url'] as String?;
+    } else {
+      throw Exception('Failed to fetch receipt URL: ${response.body}');
+    }
+  }
 }
