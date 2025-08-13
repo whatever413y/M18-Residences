@@ -17,3 +17,10 @@ class LoginWithAccountId extends AuthEvent {
 }
 
 class LogoutRequested extends AuthEvent {}
+
+class FetchReceiptUrl extends AuthEvent {
+  final String tenantId;
+  final String filename;
+
+  FetchReceiptUrl(this.tenantId, this.filename);
+}

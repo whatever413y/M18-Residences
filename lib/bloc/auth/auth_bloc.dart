@@ -13,6 +13,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckAuthStatus>(_onCheckAuthStatus);
     on<LoginWithAccountId>(_onLoginWithAccountId);
     on<LogoutRequested>(_onLogout);
+    on<FetchReceiptUrl>(_onFetchReceiptUrl);
   }
 
   Future<void> _onCheckAuthStatus(CheckAuthStatus event, Emitter<AuthState> emit) async {
@@ -64,6 +65,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await authService.logout();
     _cachedTenant = null;
     emit(Unauthenticated('You have been logged out.'));
+  }
+
+  Future<void> _onFetchReceiptUrl(FetchReceiptUrl event, Emitter<AuthState> emit) async {
+    emit(ReceiptUrlLoading());
+    try {
+      final url = await authService.fetchReceiptUrl(event.tenantId, event.filename);
+      if (url == null) throw Exception('URL not found');
+      emit(ReceiptUrlLoaded(url));
+    } catch (e) {
+      emit(ReceiptUrlError(e.toString()));
+    }
   }
 
   Tenant? get cachedTenant => _cachedTenant;

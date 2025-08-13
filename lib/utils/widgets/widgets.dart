@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:m18_residences/bloc/auth/auth_bloc.dart';
 import 'package:m18_residences/bloc/auth/auth_event.dart';
+import 'package:m18_residences/bloc/auth/auth_state.dart';
 import 'package:m18_residences/features/login/login_page.dart';
 import 'package:m18_residences/models/additional_charrges.dart';
 import 'package:m18_residences/models/billing.dart';
@@ -115,28 +116,40 @@ Widget buildReceipt(BuildContext context, Bill bill) {
     child: InkWell(
       onTap: () {
         if (bill.receiptUrl != null) {
+          context.read<AuthBloc>().add(FetchReceiptUrl(bill.tenantId.toString(), bill.receiptUrl!));
           showDialog(
             context: context,
-            builder:
-                (context) => Dialog(
-                  child: InteractiveViewer(
-                    child: Image.network(
-                      bill.receiptUrl!,
-                      fit: BoxFit.contain,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return SizedBox(width: 200, height: 200, child: Center(child: CircularProgressIndicator()));
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Padding(padding: EdgeInsets.all(20), child: Text('Failed to load image'));
-                      },
-                    ),
+            builder: (context) {
+              return Dialog(
+                child: SizedBox(
+                  child: BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      if (state is ReceiptUrlLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is ReceiptUrlLoaded) {
+                        return InteractiveViewer(
+                          child: Image.network(
+                            state.url,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Padding(padding: EdgeInsets.all(20), child: Text('Failed to load image'));
+                            },
+                          ),
+                        );
+                      } else if (state is ReceiptUrlError) {
+                        return Center(child: Text('Error loading receipt: ${state.message}'));
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
                   ),
                 ),
+              );
+            },
           );
         }
       },
-      child: Text('Receipt', style: const TextStyle(color: Colors.blue)),
+      child: Text(Uri.parse(bill.receiptUrl!).pathSegments.last, style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline)),
     ),
   );
 }
