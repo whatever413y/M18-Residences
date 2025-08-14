@@ -67,7 +67,7 @@ class HistoryPageState extends State<HistoryPage> {
         body: LayoutBuilder(
           builder: (context, constraints) {
             final maxWidth = constraints.maxWidth;
-            final isMobile = maxWidth < 800;
+            final isMobile = maxWidth < 600;
             final horizontalPadding = isMobile ? 16.0 : 40.0;
 
             return BlocBuilder<AuthBloc, AuthState>(
@@ -185,13 +185,13 @@ class HistoryPageState extends State<HistoryPage> {
 
     int yMax = ((maxReading / 50).ceil() * 50);
 
-    final double barWidth = screenWidth < 800 ? 20 : 30;
+    final double barWidth = screenWidth < 600 ? 20 : 30;
 
     return ElectricConsumptionBarChart(completeReadings: completeReadings, yMax: yMax, barWidth: barWidth);
   }
 
   Widget _buildBillingHistory(BuildContext context, bool isMobile) {
-    final maxListWidth = isMobile ? double.infinity : 800.0;
+    final maxListWidth = isMobile ? double.infinity : 600.0;
 
     if (billingHistory!.isEmpty) {
       return const Center(child: Text("No billing history available."));
@@ -220,13 +220,13 @@ class HistoryPageState extends State<HistoryPage> {
 
   Widget _buildBillDialog(BuildContext context, Bill bill) {
     final hasAdditionalCharges = (bill.additionalCharges ?? []).any((charge) => charge.amount != 0);
-    final isWide = MediaQuery.of(context).size.width > 800;
+    final isWide = MediaQuery.of(context).size.width > 600;
 
     return AlertDialog(
       title: const Text("Billing Details", style: TextStyle(fontWeight: FontWeight.bold)),
       contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       content: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: isWide ? 800 : double.infinity, maxHeight: MediaQuery.of(context).size.height * 0.8),
+        constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity, maxHeight: MediaQuery.of(context).size.height * 0.8),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

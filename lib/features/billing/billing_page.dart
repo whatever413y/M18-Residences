@@ -51,8 +51,8 @@ class BillingPageState extends State<BillingPage> {
         body: LayoutBuilder(
           builder: (context, constraints) {
             final maxWidth = constraints.maxWidth;
-            final isMobile = maxWidth < 800;
-            final contentWidth = isMobile ? maxWidth : 800.0;
+            final isMobile = maxWidth < 600;
+            final contentWidth = isMobile ? maxWidth : 600.0;
 
             return BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
