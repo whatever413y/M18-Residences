@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:m18_residences/models/tenant.dart';
 import 'auth_event.dart';
@@ -45,20 +48,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLoginWithAccountId(LoginWithAccountId event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
 
-    final token = await authService.login(event.accountId);
-    if (token == null) {
-      emit(AuthError('Login failed. Please check your account ID and try again.'));
-      return;
-    }
+    try {
+      final token = await authService.login(event.accountId);
 
-    final tenant = authService.cachedTenant;
-    if (tenant == null) {
-      emit(AuthError('User data missing after login.'));
-      return;
-    }
+      if (token == null) {
+        emit(AuthError('Account ID not found.'));
+        return;
+      }
 
-    _cachedTenant = tenant;
-    emit(Authenticated(token: token, tenant: tenant));
+      final tenant = authService.cachedTenant;
+      if (tenant == null) {
+        emit(AuthError('User data missing after login.'));
+        return;
+      }
+
+      _cachedTenant = tenant;
+      emit(Authenticated(token: token, tenant: tenant));
+    } on TimeoutException {
+      emit(AuthError('Connection timed out. Please try again.'));
+    } on SocketException {
+      emit(AuthError('Network error. Please check your connection.'));
+    } catch (e) {
+      emit(AuthError('Unexpected error: ${e.toString()}'));
+    }
   }
 
   Future<void> _onLogout(LogoutRequested event, Emitter<AuthState> emit) async {

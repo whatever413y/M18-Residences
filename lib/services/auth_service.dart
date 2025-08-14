@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:m18_residences/models/tenant.dart';
@@ -14,16 +16,15 @@ class AuthService {
   Future<String?> login(String username) async {
     try {
       final url = Uri.parse('${dotenv.env['API_URL']}/auth/login');
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'name': username}));
+      final response = await http
+          .post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'name': username}))
+          .timeout(const Duration(seconds: 120));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final token = data['token'] as String?;
         final tenantJson = data['tenant'] as Map<String, dynamic>?;
-
-        if (token == null || token.isEmpty || tenantJson == null) {
-          return null;
-        }
+        if (token == null || tenantJson == null) return null;
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_tokenKey, token);
@@ -34,9 +35,12 @@ class AuthService {
       }
 
       return null;
+    } on TimeoutException {
+      throw TimeoutException('Request timed out.');
+    } on SocketException {
+      throw SocketException('No internet connection');
     } catch (e) {
-      print('Error logging in: $e');
-      return null;
+      throw Exception('Unexpected error: $e');
     }
   }
 
@@ -94,12 +98,12 @@ class AuthService {
     final headers = await _getAuthHeaders();
     final url = Uri.parse('${dotenv.env['API_URL']}/auth/receipts/$tenantId/$filename');
     final response = await http.get(url, headers: headers);
-
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return data['url'] as String?;
     } else {
-      throw Exception('Failed to fetch receipt URL: ${response.body}');
+      print('Error fetching receipt URL: ${response.statusCode} - ${response.body}');
+      return null;
     }
   }
 }
