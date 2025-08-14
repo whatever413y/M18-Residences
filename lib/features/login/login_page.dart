@@ -43,7 +43,7 @@ class LoginPageState extends State<LoginPage> {
           listener: (context, state) {
             if (state is AuthError) {
               setState(() {
-                _accountIdError = "Account ID not found.";
+                _accountIdError = state.message;
               });
               _formKey.currentState?.validate();
             } else if (state is Authenticated) {
