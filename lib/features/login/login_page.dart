@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:m18_residences/bloc/auth/auth_bloc.dart';
 import 'package:m18_residences/bloc/auth/auth_event.dart';
 import 'package:m18_residences/bloc/auth/auth_state.dart';
+import 'package:m18_residences/features/login/widgets/loading_overlay.dart';
 import 'package:m18_residences/theme.dart';
 import 'package:m18_residences/utils/custom_form_field.dart';
 import '../home/home_page.dart';
@@ -38,7 +39,7 @@ class LoginPageState extends State<LoginPage> {
     return Theme(
       data: theme,
       child: Scaffold(
-        body: BlocListener<AuthBloc, AuthState>(
+        body: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is AuthError) {
               setState(() {
@@ -47,43 +48,53 @@ class LoginPageState extends State<LoginPage> {
               _formKey.currentState?.validate();
             } else if (state is Authenticated) {
               _controller.clear();
-              if (Navigator.of(context).canPop() == false) {
+              if (!Navigator.of(context).canPop()) {
                 _navigateToPage(HomePage());
               }
             }
           },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final maxWidth = constraints.maxWidth;
+          builder: (context, state) {
+            final isLoading = state is AuthLoading;
 
-              final cardWidth = maxWidth < 500 ? maxWidth * 0.9 : 400.0;
+            return _buildLoading(
+              isLoading,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final maxWidth = constraints.maxWidth;
+                  final cardWidth = maxWidth < 500 ? maxWidth * 0.9 : 400.0;
 
-              return Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.blue.shade900, Colors.blue.shade500],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                  return Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.blue.shade900, Colors.blue.shade500],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Center(
-                    child: SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: cardWidth),
-                        child: Padding(padding: const EdgeInsets.all(16.0), child: _buildCard(context, maxWidth)),
+                      Center(
+                        child: SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: cardWidth),
+                            child: Padding(padding: const EdgeInsets.all(16.0), child: _buildCard(context, maxWidth)),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
         ),
       ),
     );
+  }
+
+  Widget _buildLoading(bool isLoading, Widget child) {
+    return Stack(children: [child, if (isLoading) LoadingOverlay()]);
   }
 
   Widget _buildCard(BuildContext context, double maxWidth) {
