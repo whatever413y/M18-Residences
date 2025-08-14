@@ -84606,7 +84606,7 @@ s===$&&A.a()
 r.E(0,new A.ft(s.a))},
 $S:0}
 A.a_O.prototype={
-$2(a,b){var s=b.b,r=s<800,q=r?s:800
+$2(a,b){var s=b.b,r=s<600,q=r?s:600
 return A.om(null,null,new A.a_M(this.a,q,r,b),t.tj,t.FB)},
 $S:95}
 A.a_M.prototype={
@@ -84669,8 +84669,8 @@ s.toString
 q=p.WA(s,n)
 B.b.ev(q,new A.a6m())
 B.d.kP((r.length!==0?new A.Y(r,new A.a6n(),A.V(r).h("Y<1,k>")).im(0,new A.a6o()):0)/50)
-return new A.Ka(q,o.a.a<800?20:30,null)},
-a2q(a,b){var s,r=null,q=b?1/0:800,p=this.r
+return new A.Ka(q,o.a.a<600?20:30,null)},
+a2q(a,b){var s,r=null,q=b?1/0:600,p=this.r
 p.toString
 if(J.kc(p))return B.C9
 p=b?0:16
@@ -84680,7 +84680,7 @@ s=J.cO(s)
 return new A.zW(new A.ahy(new A.a6t(this,q),s,!0,!0,!0,r),new A.ai(p,12,p,12),B.as,!1,r,r,B.lo,!1,r,s,B.a3,r,r,B.P,B.ai,r)},
 a2p(a,b){var s,r,q,p,o,n=null,m=b.f,l=m==null?A.b([],t.er):m,k=B.b.fZ(l,new A.a6p())
 l=t.w
-s=A.bD(a,n,l).w.a.a>800?800:1/0
+s=A.bD(a,n,l).w.a.a>600?600:1/0
 l=A.bD(a,n,l).w
 r=A.bY("Posting Date: "+A.avu().iV(b.w),n,n,n,n,B.RN,n,n)
 q=b.Q
@@ -84714,7 +84714,7 @@ s===$&&A.a()
 r.E(0,new A.mc(s.a))},
 $S:0}
 A.a6F.prototype={
-$2(a,b){var s=b.b<800,r=s?16:40
+$2(a,b){var s=b.b<600,r=s?16:40
 return A.om(null,null,new A.a6D(this.a,r,s),t.tj,t.FB)},
 $S:95}
 A.a6D.prototype={
@@ -84902,7 +84902,7 @@ s===$&&A.a()
 r.E(0,new A.ft(s.a))},
 $S:0}
 A.a6T.prototype={
-$2(a,b){var s=b.b,r=s<800,q=r?s:800
+$2(a,b){var s=b.b,r=s<600,q=r?s:600
 return A.om(null,null,new A.a6R(this.a,q,b,r),t.tj,t.FB)},
 $S:95}
 A.a6R.prototype={
