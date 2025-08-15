@@ -7,6 +7,7 @@ import 'package:m18_residences/bloc/billing/billing_bloc.dart';
 import 'package:m18_residences/bloc/billing/billing_event.dart';
 import 'package:m18_residences/bloc/billing/billing_state.dart';
 import 'package:m18_residences/features/billing/billing_page.dart';
+import 'package:m18_residences/features/payment/payment_page.dart';
 import 'package:m18_residences/models/billing.dart';
 import 'package:m18_residences/models/tenant.dart';
 import 'package:m18_residences/theme.dart';
@@ -135,6 +136,8 @@ class HomePageState extends State<HomePage> {
           GestureDetector(onTap: () => _navigateToPage(BillingPage()), child: buildBillCardWidget(bill!, context)),
           SizedBox(height: isMobile ? 16 : 20),
           _buildSquareButton("Billing History", Icons.history, HistoryPage(), isMobile: isMobile),
+          SizedBox(height: isMobile ? 16 : 20),
+          _buildSquareButton('Payment', Icons.payment, PaymentPage(), isMobile: isMobile),
         ],
       ),
     );

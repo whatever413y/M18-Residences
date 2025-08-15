@@ -17,6 +17,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginWithAccountId>(_onLoginWithAccountId);
     on<LogoutRequested>(_onLogout);
     on<FetchReceiptUrl>(_onFetchReceiptUrl);
+    on<FetchPaymentImageUrl>(_onFetchPaymentImageUrl);
   }
 
   Future<void> _onCheckAuthStatus(CheckAuthStatus event, Emitter<AuthState> emit) async {
@@ -80,13 +81,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onFetchReceiptUrl(FetchReceiptUrl event, Emitter<AuthState> emit) async {
-    emit(ReceiptUrlLoading());
+    emit(UrlLoading());
     try {
       final url = await authService.fetchReceiptUrl(event.tenantId, event.filename);
       if (url == null) throw Exception('URL not found');
-      emit(ReceiptUrlLoaded(url));
+      emit(UrlLoaded(url));
     } catch (e) {
-      emit(ReceiptUrlError(e.toString()));
+      emit(UrlError(e.toString()));
+    }
+  }
+
+  Future<void> _onFetchPaymentImageUrl(FetchPaymentImageUrl event, Emitter<AuthState> emit) async {
+    emit(UrlLoading());
+    try {
+      final url = await authService.fetchPaymentImageUrl(event.filename);
+      if (url == null) throw Exception('URL not found');
+      emit(UrlLoaded(url));
+    } catch (e) {
+      emit(UrlError(e.toString()));
     }
   }
 
