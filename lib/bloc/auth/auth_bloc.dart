@@ -83,7 +83,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onFetchReceiptUrl(FetchReceiptUrl event, Emitter<AuthState> emit) async {
     emit(UrlLoading());
     try {
-      final url = await authService.fetchReceiptUrl(event.tenantId, event.filename);
+      final url = await authService.fetchReceiptUrl(event.tenantName, event.filename);
       if (url == null) throw Exception('URL not found');
       emit(UrlLoaded(url));
     } catch (e) {

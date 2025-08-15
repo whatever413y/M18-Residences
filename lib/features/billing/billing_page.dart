@@ -128,7 +128,7 @@ class BillingPageState extends State<BillingPage> {
                       bill.paid ? "Paid" : "Unpaid",
                       style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.w600, color: bill.paid ? Colors.green : Colors.red),
                     ),
-                    if (bill.receiptUrl != null) ...[const SizedBox(height: 8), buildReceipt(context, bill)],
+                    if (bill.receiptUrl != null) ...[const SizedBox(height: 8), buildReceipt(context, tenant.name, bill)],
                   ],
                 ),
               ],
