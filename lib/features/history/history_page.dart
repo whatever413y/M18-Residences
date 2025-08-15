@@ -252,7 +252,7 @@ class HistoryPageState extends State<HistoryPage> {
                         bill.paid ? "Paid" : "Unpaid",
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: bill.paid ? Colors.green : Colors.red),
                       ),
-                      if (bill.receiptUrl != null) ...[const SizedBox(height: 8), buildReceipt(context, bill)],
+                      if (bill.receiptUrl != null) ...[const SizedBox(height: 8), buildReceipt(context, tenant.name, bill)],
                     ],
                   ),
                 ],

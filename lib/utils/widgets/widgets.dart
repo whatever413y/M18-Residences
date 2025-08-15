@@ -110,13 +110,13 @@ Widget buildBillCardWidget(Bill bill, BuildContext context) {
   );
 }
 
-Widget buildReceipt(BuildContext context, Bill bill) {
+Widget buildReceipt(BuildContext context, String tenantName, Bill bill) {
   return Padding(
     padding: const EdgeInsets.only(top: 8),
     child: InkWell(
       onTap: () {
         if (bill.receiptUrl != null) {
-          context.read<AuthBloc>().add(FetchReceiptUrl(bill.tenantId.toString(), bill.receiptUrl!));
+          context.read<AuthBloc>().add(FetchReceiptUrl(tenantName, bill.receiptUrl!));
           showDialog(
             context: context,
             builder: (context) {
