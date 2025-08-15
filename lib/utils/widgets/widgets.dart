@@ -124,9 +124,9 @@ Widget buildReceipt(BuildContext context, Bill bill) {
                 child: SizedBox(
                   child: BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
-                      if (state is ReceiptUrlLoading) {
+                      if (state is UrlLoading) {
                         return const Center(child: CircularProgressIndicator());
-                      } else if (state is ReceiptUrlLoaded) {
+                      } else if (state is UrlLoaded) {
                         return InteractiveViewer(
                           child: Image.network(
                             state.url,
@@ -136,7 +136,7 @@ Widget buildReceipt(BuildContext context, Bill bill) {
                             },
                           ),
                         );
-                      } else if (state is ReceiptUrlError) {
+                      } else if (state is UrlError) {
                         return Center(child: Text('Error loading receipt: ${state.message}'));
                       } else {
                         return const SizedBox.shrink();

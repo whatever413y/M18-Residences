@@ -24,3 +24,9 @@ class FetchReceiptUrl extends AuthEvent {
 
   FetchReceiptUrl(this.tenantId, this.filename);
 }
+
+class FetchPaymentImageUrl extends AuthEvent {
+  final String filename;
+
+  FetchPaymentImageUrl(this.filename);
+}

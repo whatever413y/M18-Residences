@@ -106,4 +106,17 @@ class AuthService {
       return null;
     }
   }
+
+  Future<String?> fetchPaymentImageUrl(String filename) async {
+    final headers = await _getAuthHeaders();
+    final url = Uri.parse('${dotenv.env['API_URL']}/auth/payments/$filename');
+    final response = await http.get(url, headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['url'] as String?;
+    } else {
+      print('Error fetching receipt URL: ${response.statusCode} - ${response.body}');
+      return null;
+    }
+  }
 }
