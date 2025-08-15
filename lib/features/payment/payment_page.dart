@@ -39,6 +39,8 @@ class PaymentPageState extends State<PaymentPage> {
           builder: (context, authState) {
             if (authState is Unauthenticated) {
               return buildErrorWidget(context: context, message: authState.message);
+            } else if (authState is UrlError) {
+              return buildErrorWidget(context: context, message: authState.message);
             }
 
             return Center(
