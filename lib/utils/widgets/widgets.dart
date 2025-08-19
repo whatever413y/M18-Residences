@@ -5,7 +5,7 @@ import 'package:m18_residences/bloc/auth/auth_bloc.dart';
 import 'package:m18_residences/bloc/auth/auth_event.dart';
 import 'package:m18_residences/bloc/auth/auth_state.dart';
 import 'package:m18_residences/features/login/login_page.dart';
-import 'package:m18_residences/models/additional_charrges.dart';
+import 'package:m18_residences/models/additional_charges.dart';
 import 'package:m18_residences/models/billing.dart';
 
 Widget buildBillItemWidget(String label, int amount, {bool isTotal = false}) {

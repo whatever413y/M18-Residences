@@ -70,9 +70,10 @@ class AuthService {
   Future<bool> isAuthenticated() async {
     final token = await getSavedToken();
     if (token == null || token.isEmpty) return false;
+
     try {
       final headers = await _getAuthHeaders();
-      final response = await http.get(Uri.parse('${dotenv.env['API_URL']}/auth/validate-token'), headers: headers);
+      final response = await http.post(Uri.parse('${dotenv.env['API_URL']}/auth/validate-token'), headers: headers);
       return response.statusCode == 200;
     } catch (e) {
       print('Error validating token: $e');
@@ -96,7 +97,7 @@ class AuthService {
 
   Future<String?> fetchReceiptUrl(String tenantName, String filename) async {
     final headers = await _getAuthHeaders();
-    final url = Uri.parse('${dotenv.env['API_URL']}/auth/receipts/$tenantName/$filename');
+    final url = Uri.parse('${dotenv.env['API_URL']}/signed-urls/receipts/$tenantName/$filename');
     final response = await http.get(url, headers: headers);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -109,7 +110,7 @@ class AuthService {
 
   Future<String?> fetchPaymentImageUrl(String filename) async {
     final headers = await _getAuthHeaders();
-    final url = Uri.parse('${dotenv.env['API_URL']}/auth/payments/$filename');
+    final url = Uri.parse('${dotenv.env['API_URL']}/signed-urls/payments/$filename');
     final response = await http.get(url, headers: headers);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

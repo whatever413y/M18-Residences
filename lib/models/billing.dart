@@ -1,4 +1,4 @@
-import 'package:m18_residences/models/additional_charrges.dart';
+import 'package:m18_residences/models/additional_charges.dart';
 
 class Bill {
   final int id;
@@ -32,23 +32,24 @@ class Bill {
   });
 
   factory Bill.fromJson(Map<String, dynamic> json) {
+    final billJson = json['bill'] ?? {};
     final reading = json['reading'] ?? {};
 
     return Bill(
-      id: json['id'],
-      readingId: json['readingId'],
-      tenantId: json['tenantId'],
-      roomCharges: json['roomCharges'],
-      electricCharges: json['electricCharges'],
-      additionalCharges:
-          json['additionalCharges'] != null ? (json['additionalCharges'] as List).map((e) => AdditionalCharge.fromJson(e)).toList() : null,
-      totalAmount: json['totalAmount'],
-      createdAt: DateTime.parse(json['createdAt']),
-      currReading: reading['currReading'] ?? 0,
-      prevReading: reading['prevReading'] ?? 0,
+      id: billJson['id'],
+      readingId: billJson['reading_id'],
+      tenantId: billJson['tenant_id'],
+      roomCharges: billJson['room_charges'],
+      electricCharges: billJson['electric_charges'],
+      totalAmount: billJson['total_amount'],
+      createdAt: DateTime.parse(billJson['created_at']),
+      paid: billJson['paid'],
+      receiptUrl: billJson['receipt_url'],
+      currReading: reading['curr_reading'] ?? 0,
+      prevReading: reading['prev_reading'] ?? 0,
       consumption: reading['consumption'] ?? 0,
-      paid: json['paid'],
-      receiptUrl: json['receiptUrl'],
+      additionalCharges:
+          json['additional_charges'] != null ? (json['additional_charges'] as List).map((e) => AdditionalCharge.fromJson(e)).toList() : null,
     );
   }
 }

@@ -16,7 +16,7 @@ class BillingService {
   Future<List<Bill>> getAllByTenantId(int tenantId) async {
     try {
       final headers = await _getAuthHeaders();
-      final response = await http.get(Uri.parse('$baseUrl/tenant/$tenantId'), headers: headers);
+      final response = await http.get(Uri.parse('$baseUrl/$tenantId/bills'), headers: headers);
 
       if (response.statusCode != 200) {
         throw Exception('Failed to load bills for tenant $tenantId: ${response.statusCode} - ${response.body}');
@@ -33,8 +33,8 @@ class BillingService {
   Future<Bill?> getById(int id) async {
     try {
       final headers = await _getAuthHeaders();
-      final response = await http.get(Uri.parse('$baseUrl/$id'), headers: headers);
-
+      final response = await http.get(Uri.parse('$baseUrl/$id/bill'), headers: headers);
+      print('Bill: ${response.body}');
       if (response.statusCode == 200) {
         return Bill.fromJson(jsonDecode(response.body));
       }
