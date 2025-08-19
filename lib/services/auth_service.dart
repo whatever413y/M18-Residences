@@ -74,7 +74,7 @@ class AuthService {
 
     try {
       final headers = await _getAuthHeaders();
-      final response = await http.get(Uri.parse('$baseUrl/auth/validate-token'), headers: headers);
+      final response = await http.post(Uri.parse('$baseUrl/auth/validate-token'), headers: headers);
       return response.statusCode == 200;
     } catch (e) {
       print('Error validating token: $e');
