@@ -4,7 +4,7 @@ import 'package:m18_residences/models/billing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BillingService {
-  static final String baseUrl = String.fromEnvironment('API_URL');
+  static final String baseUrl = '${String.fromEnvironment('API_URL')}/bills';
 
   Future<Map<String, String>> _getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();
@@ -15,7 +15,7 @@ class BillingService {
   Future<List<Bill>> getAllByTenantId(int tenantId) async {
     try {
       final headers = await _getAuthHeaders();
-      final response = await http.get(Uri.parse('$baseUrl/bills/$tenantId/bills'), headers: headers);
+      final response = await http.get(Uri.parse('$baseUrl/$tenantId/bills'), headers: headers);
 
       if (response.statusCode != 200) {
         throw Exception('Failed to load bills for tenant $tenantId: ${response.statusCode} - ${response.body}');
@@ -32,7 +32,7 @@ class BillingService {
   Future<Bill?> getById(int id) async {
     try {
       final headers = await _getAuthHeaders();
-      final response = await http.get(Uri.parse('$baseUrl/bills/$id/bill'), headers: headers);
+      final response = await http.get(Uri.parse('$baseUrl/$id/bill'), headers: headers);
 
       if (response.statusCode == 200) {
         return Bill.fromJson(jsonDecode(response.body));
