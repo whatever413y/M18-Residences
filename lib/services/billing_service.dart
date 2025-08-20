@@ -34,7 +34,7 @@ class BillingService {
     try {
       final headers = await _getAuthHeaders();
       final response = await http.get(Uri.parse('$baseUrl/$id/bill'), headers: headers);
-      print('Bill: ${response.body}');
+      
       if (response.statusCode == 200) {
         return Bill.fromJson(jsonDecode(response.body));
       }
