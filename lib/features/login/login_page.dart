@@ -18,6 +18,19 @@ class LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   String? _accountIdError;
 
+  @override
+  void initState() {
+    super.initState();
+
+    final uri = Uri.base;
+    if (uri.pathSegments.isNotEmpty) {
+      final accountId = uri.pathSegments.last;
+      if (accountId.isNotEmpty) {
+        _controller.text = accountId;
+      }
+    }
+  }
+
   void _searchTenant() {
     setState(() {
       _accountIdError = null;
