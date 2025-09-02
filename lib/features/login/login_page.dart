@@ -26,17 +26,11 @@ class LoginPageState extends State<LoginPage> {
 
     String? accountId;
 
-    // Case 1: hash routing
     if (uri.fragment.isNotEmpty) {
       final fragUri = Uri.parse(uri.fragment);
       if (fragUri.pathSegments.isNotEmpty) {
         accountId = fragUri.pathSegments.last;
       }
-    }
-
-    // Case 2: normal path routing (local dev server, e.g. localhost:8080/accountid)
-    if (accountId == null && uri.pathSegments.length > 1) {
-      accountId = uri.pathSegments.last;
     }
 
     if (accountId != null && accountId.isNotEmpty) {
