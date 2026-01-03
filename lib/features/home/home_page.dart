@@ -13,7 +13,7 @@ import 'package:m18_residences/models/tenant.dart';
 import 'package:m18_residences/theme.dart';
 import 'package:m18_residences/utils/custom_app_bar.dart';
 import 'package:m18_residences/utils/widgets/widgets.dart';
-// import '../history/history_page.dart';
+import '../history/history_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -134,8 +134,8 @@ class HomePageState extends State<HomePage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           GestureDetector(onTap: () => _navigateToPage(BillingPage()), child: buildBillCardWidget(bill!, context)),
-          // SizedBox(height: isMobile ? 16 : 20),
-          // _buildSquareButton("Billing History", Icons.history, HistoryPage(), isMobile: isMobile),
+          SizedBox(height: isMobile ? 16 : 20),
+          _buildSquareButton("Billing History", Icons.history, HistoryPage(), isMobile: isMobile),
           SizedBox(height: isMobile ? 16 : 20),
           _buildSquareButton('Payment', Icons.payment, PaymentPage(), isMobile: isMobile),
         ],
