@@ -42,7 +42,7 @@ class BillingPageState extends State<BillingPage> {
       data: theme,
       child: Scaffold(
         appBar: CustomAppBar(
-          title: "Billing Statement",
+          title: "Billing Statement ${tenant.name}",
           showRefresh: true,
           onRefresh: () {
             billingBloc.add(FetchBillingByTenantId(tenant.id));
