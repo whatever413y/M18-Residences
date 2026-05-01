@@ -142,10 +142,9 @@ class BillingPageState extends State<BillingPage> {
 
             Divider(thickness: 1.2),
 
-            buildBillItemWidget("Room Charges", bill.roomCharges),
-            buildBillItemWidget("Electric Charges", bill.electricCharges),
+            buildBillItemWidget("Room", bill.roomCharges),
 
-            if (hasAdditionalCharges) ...buildChargesDetails(bill.additionalCharges!),
+            if (hasAdditionalCharges) ...buildChargesDetails(bill.electricCharges, bill.additionalCharges!),
 
             Divider(thickness: 1.2),
 

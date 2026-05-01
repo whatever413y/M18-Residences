@@ -154,7 +154,7 @@ Widget buildReceipt(BuildContext context, String tenantName, Bill bill) {
   );
 }
 
-List<Widget> buildChargesDetails(List<AdditionalCharge> charges) {
+List<Widget> buildChargesDetails(int electricCharges, List<AdditionalCharge> charges) {
   final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱', decimalDigits: 0);
   final additionalCharges = charges.where((c) => c.amount >= 0).toList();
   final discounts = charges.where((c) => c.amount < 0).toList();
@@ -165,6 +165,13 @@ List<Widget> buildChargesDetails(List<AdditionalCharge> charges) {
     detailRows.add(const SizedBox(height: 12));
     detailRows.add(const Text('Additional Charges', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16)));
     detailRows.add(const SizedBox(height: 8));
+
+    if (electricCharges > 0) {
+    detailRows.add(buildChargeRow(
+      "Electric",
+      currencyFormat.format(electricCharges),
+    ));
+    }
 
     for (final charge in additionalCharges) {
       detailRows.add(buildChargeRow(charge.description, currencyFormat.format(charge.amount)));
@@ -180,6 +187,33 @@ List<Widget> buildChargesDetails(List<AdditionalCharge> charges) {
       detailRows.add(buildChargeRow(charge.description, currencyFormat.format(charge.amount.abs())));
     }
   }
+
+  final totalCharges = electricCharges +
+    charges.fold(0.0, (sum, c) => sum + c.amount);
+
+  detailRows.add(const SizedBox(height: 8));
+
+  detailRows.add(
+    Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            "Subtotal",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            currencyFormat.format(
+              electricCharges +
+              additionalCharges.fold(0.0, (sum, c) => sum + c.amount),
+            ),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    ),
+  );
 
   return detailRows;
 }
