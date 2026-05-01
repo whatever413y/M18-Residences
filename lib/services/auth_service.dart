@@ -40,6 +40,7 @@ class AuthService {
     } on SocketException {
       throw SocketException('No internet connection');
     } catch (e) {
+      print('Error during login: $e');
       throw Exception('Unexpected error: $e');
     }
   }

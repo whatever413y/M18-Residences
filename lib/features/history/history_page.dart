@@ -273,9 +273,8 @@ class HistoryPageState extends State<HistoryPage> {
 
               buildBillItemWidget("Room Charges", bill.roomCharges),
               const SizedBox(height: 8),
-              buildBillItemWidget("Electric Charges", bill.electricCharges),
 
-              if (hasAdditionalCharges) ...buildChargesDetails(bill.additionalCharges!),
+              if (hasAdditionalCharges) ...buildChargesDetails(bill.electricCharges, bill.additionalCharges!),
 
               const SizedBox(height: 12),
               const Divider(thickness: 1.2),
