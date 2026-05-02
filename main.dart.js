@@ -26566,7 +26566,7 @@ return new A.bs(B.F6,A.a9k(!1,s,!0,A.bL(B.b.gav(A.dW(r).gmM()),s,s,s,s,B.Rg,s,s)
 aHA(a,b){var s,r,q,p,o,n=null,m=A.aDR(0,"en_PH","\u20b1"),l=A.V(b).h("au<1>"),k=l.h("u.E"),j=A.Y(new A.au(b,new A.aw_(),l),k),i=A.Y(new A.au(b,new A.aw0(),l),k)
 l=t.p
 s=A.c([],l)
-if(j.length!==0){s.push(B.d_)
+if(j.length!==0||a>0){s.push(B.d_)
 s.push(B.TS)
 s.push(B.c8)
 if(a>0)s.push(A.aVX("Electric",m.hM(a)))
@@ -86580,7 +86580,7 @@ o=t.p
 p=A.c([A.bL(p,n,n,n,n,A.cO(n,n,q?B.kj:B.hj,n,n,n,n,n,n,n,n,16,n,n,B.em,n,n,!0,n,n,n,n,n,n,n,n),n,n)],o)
 if(b.as!=null){q=this.f
 q===$&&A.a()
-B.b.S(p,A.c([B.c8,A.aHB(a,q.b,b)],o))}r=A.c([A.j1(A.c([new A.ph(1,B.jP,r,n),B.Pk,A.ha(p,B.cF,B.a1,B.aE)],o),B.bw,B.c3,B.aE,0),B.d_,B.j8,B.d_,A.xl("Previous Reading",b.y),B.c8,A.xl("Current Reading",b.x),B.c8,A.xl("Consumption",b.z),B.d_,B.j8,B.d_,A.a_P("Room Charges",b.d,!1),B.c8],o)
+B.b.S(p,A.c([B.c8,A.aHB(a,q.b,b)],o))}r=A.c([A.j1(A.c([new A.ph(1,B.jP,r,n),B.Pk,A.ha(p,B.cF,B.a1,B.aE)],o),B.bw,B.c3,B.aE,0),B.d_,B.j8,B.d_,A.xl("Previous Reading",b.y),B.c8,A.xl("Current Reading",b.x),B.c8,A.xl("Consumption",b.z),B.d_,B.j8,B.d_,A.a_P("Room",b.d,!1),B.c8],o)
 if(k){m.toString
 B.b.S(r,A.aHA(b.e,m))}r.push(B.d_)
 r.push(B.j8)
