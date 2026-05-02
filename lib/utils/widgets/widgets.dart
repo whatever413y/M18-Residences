@@ -161,48 +161,27 @@ List<Widget> buildChargesDetails(int electricCharges, List<AdditionalCharge> cha
 
   List<Widget> detailRows = [];
 
-  if (electricCharges > 0 || additionalCharges.isNotEmpty) {
-    detailRows.add(const SizedBox(height: 12));
-    detailRows.add(const Text(
-      'Additional Charges',
-      style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16),
-    ));
-    detailRows.add(const SizedBox(height: 8));
+  detailRows.add(const SizedBox(height: 12));
+  detailRows.add(const Text('Additional Charges', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16)));
+  detailRows.add(const SizedBox(height: 8));
+  detailRows.add(buildChargeRow("Electricity", currencyFormat.format(electricCharges)));
 
-    if (electricCharges > 0) {
-      detailRows.add(buildChargeRow(
-        "Electric",
-        currencyFormat.format(electricCharges),
-      ));
-    }
-
-    for (final charge in additionalCharges) {
-      detailRows.add(buildChargeRow(
-        charge.description,
-        currencyFormat.format(charge.amount),
-      ));
-    }
+  for (final charge in additionalCharges) {
+    detailRows.add(buildChargeRow(charge.description, currencyFormat.format(charge.amount)));
   }
 
   if (discounts.isNotEmpty) {
     detailRows.add(const SizedBox(height: 16));
-    detailRows.add(const Text(
-      'Discounts',
-      style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16),
-    ));
+    detailRows.add(const Text('Discounts', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16)));
     detailRows.add(const SizedBox(height: 8));
 
     for (final charge in discounts) {
-      detailRows.add(buildChargeRow(
-        charge.description,
-        currencyFormat.format(charge.amount.abs()),
-      ));
+      detailRows.add(buildChargeRow(charge.description, currencyFormat.format(charge.amount.abs())));
     }
   }
 
   if (electricCharges > 0 || charges.isNotEmpty) {
-    final subtotal = electricCharges +
-        charges.fold<double>(0.0, (sum, c) => sum + c.amount);
+    final subtotal = electricCharges + charges.fold<double>(0.0, (sum, c) => sum + c.amount);
 
     detailRows.add(const SizedBox(height: 8));
 
@@ -212,14 +191,8 @@ List<Widget> buildChargesDetails(int electricCharges, List<AdditionalCharge> cha
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              "Subtotal",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              currencyFormat.format(subtotal),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            const Text("Subtotal", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(currencyFormat.format(subtotal), style: const TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
