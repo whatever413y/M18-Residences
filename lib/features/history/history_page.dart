@@ -58,7 +58,8 @@ class HistoryPageState extends State<HistoryPage> {
       data: theme,
       child: Scaffold(
         appBar: CustomAppBar(
-          title: "Billing History ${tenant.name}",
+          title: "Billing History",
+          subtitle: tenant.name,
           showRefresh: true,
           onRefresh: () {
             billingBloc.add(FetchBillingsByTenantId(tenant.id));

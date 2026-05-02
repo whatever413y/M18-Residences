@@ -53,7 +53,8 @@ class HomePageState extends State<HomePage> {
       data: theme,
       child: Scaffold(
         appBar: CustomAppBar(
-          title: "Welcome ${tenant.name}",
+          title: "Welcome",
+          subtitle: tenant.name,
           logoutOnBack: true,
           showRefresh: true,
           onRefresh: () {
