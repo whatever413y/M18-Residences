@@ -40,6 +40,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     }
 
     return AppBar(
+      centerTitle: true,
       title: _buildTitle(titleStyle),
       backgroundColor: theme.appBarTheme.backgroundColor,
       iconTheme: theme.appBarTheme.iconTheme,
@@ -62,12 +63,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildTitle(TextStyle? titleStyle) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, softWrap: false, style: titleStyle),
+        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, softWrap: false, textAlign: TextAlign.center, style: titleStyle),
         if (subtitle != null)
-          Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis, softWrap: false, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+          Text(
+            subtitle!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: Colors.white70),
+          ),
       ],
     );
   }
