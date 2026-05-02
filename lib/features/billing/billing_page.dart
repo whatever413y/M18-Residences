@@ -107,8 +107,6 @@ class BillingPageState extends State<BillingPage> {
   }
 
   Widget _buildBillCard(Bill bill, bool isMobile) {
-    final hasAdditionalCharges = (bill.additionalCharges ?? []).any((charge) => charge.amount != 0);
-
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -145,7 +143,7 @@ class BillingPageState extends State<BillingPage> {
 
             buildBillItemWidget("Room", bill.roomCharges),
 
-            if (hasAdditionalCharges) ...buildChargesDetails(bill.electricCharges, bill.additionalCharges!),
+            ...buildChargesDetails(bill.electricCharges, bill.additionalCharges ?? []),
 
             Divider(thickness: 1.2),
 

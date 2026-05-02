@@ -223,7 +223,6 @@ class HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildBillDialog(BuildContext context, Bill bill) {
-    final hasAdditionalCharges = (bill.additionalCharges ?? []).any((charge) => charge.amount != 0);
     final isWide = MediaQuery.of(context).size.width > 600;
 
     return AlertDialog(
@@ -275,7 +274,7 @@ class HistoryPageState extends State<HistoryPage> {
               buildBillItemWidget("Room", bill.roomCharges),
               const SizedBox(height: 8),
 
-              if (hasAdditionalCharges) ...buildChargesDetails(bill.electricCharges, bill.additionalCharges!),
+              ...buildChargesDetails(bill.electricCharges, bill.additionalCharges ?? []),
 
               const SizedBox(height: 12),
               const Divider(thickness: 1.2),
