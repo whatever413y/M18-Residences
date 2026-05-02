@@ -161,20 +161,23 @@ List<Widget> buildChargesDetails(int electricCharges, List<AdditionalCharge> cha
 
   List<Widget> detailRows = [];
 
-  if (additionalCharges.isNotEmpty) {
+  if (additionalCharges.isNotEmpty || electricCharges > 0) {
     detailRows.add(const SizedBox(height: 12));
     detailRows.add(const Text('Additional Charges', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16)));
     detailRows.add(const SizedBox(height: 8));
 
     if (electricCharges > 0) {
-    detailRows.add(buildChargeRow(
-      "Electric",
-      currencyFormat.format(electricCharges),
-    ));
+      detailRows.add(buildChargeRow(
+        "Electric",
+        currencyFormat.format(electricCharges),
+      ));
     }
 
     for (final charge in additionalCharges) {
-      detailRows.add(buildChargeRow(charge.description, currencyFormat.format(charge.amount)));
+      detailRows.add(buildChargeRow(
+        charge.description,
+        currencyFormat.format(charge.amount),
+      ));
     }
   }
 
