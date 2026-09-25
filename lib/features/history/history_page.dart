@@ -8,13 +8,8 @@ import 'package:m18_residences/bloc/billing/billing_bloc.dart';
 import 'package:m18_residences/bloc/billing/billing_event.dart';
 import 'package:m18_residences/bloc/billing/billing_state.dart';
 import 'package:m18_residences/features/history/widgets/electric_consumption_bar_chart.dart';
-import 'package:m18_residences/models/billing.dart';
-import 'package:m18_residences/models/reading.dart';
-import 'package:m18_residences/models/tenant.dart';
-import 'package:m18_residences/theme.dart';
-import 'package:m18_residences/utils/custom_app_bar.dart';
-import 'package:m18_residences/utils/custom_dropdown_form.dart';
 import 'package:m18_residences/utils/widgets/widgets.dart';
+import 'package:m18_shared/m18_shared.dart';
 
 class HistoryPage extends StatefulWidget {
   @override
@@ -27,7 +22,7 @@ class HistoryPageState extends State<HistoryPage> {
   late Tenant tenant;
 
   List<Bill>? billingHistory;
-  List<Reading>? electricityReadings;
+  List<ConsumptionPoint>? electricityReadings;
   int? _selectedYear;
 
   @override
@@ -40,12 +35,12 @@ class HistoryPageState extends State<HistoryPage> {
     billingBloc.add(FetchBillingsByTenantId(tenant.id));
   }
 
-  List<Reading> getCompleteReadingsForYear({required int selectedYear, required List<Reading> readings}) {
+  List<ConsumptionPoint> getCompleteReadingsForYear({required int selectedYear, required List<ConsumptionPoint> readings}) {
     return List.generate(12, (index) {
       final month = index + 1;
       final existingReading = readings.firstWhere(
-        (reading) => reading.createdAt.year == selectedYear && reading.createdAt.month == month,
-        orElse: () => Reading(id: 0, prevReading: 0, currReading: 0, consumption: 0, createdAt: DateTime(selectedYear, month)),
+        (reading) => reading.date.year == selectedYear && reading.date.month == month,
+        orElse: () => ConsumptionPoint(date: DateTime(selectedYear, month), consumption: 0, currReading: 0),
       );
       return existingReading;
     });
@@ -60,6 +55,7 @@ class HistoryPageState extends State<HistoryPage> {
         appBar: CustomAppBar(
           title: "Billing History",
           subtitle: tenant.name,
+          centerTitle: true,
           showRefresh: true,
           onRefresh: () {
             billingBloc.add(FetchBillingsByTenantId(tenant.id));
@@ -74,9 +70,7 @@ class HistoryPageState extends State<HistoryPage> {
             return BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
                 if (authState is Unauthenticated) {
-                  return buildErrorWidget(context: context, message: authState.message);
-                } else if (authState is UrlError) {
-                  return buildErrorWidget(context: context, message: authState.message);
+                  return ErrorView(message: authState.message);
                 }
 
                 return BlocBuilder<BillingBloc, BillingState>(
@@ -84,33 +78,24 @@ class HistoryPageState extends State<HistoryPage> {
                     if (billingState is BillingLoading) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (billingState is BillingError) {
-                      return buildErrorWidget(context: context, message: billingState.message);
+                      return ErrorView(message: billingState.message);
                     } else if (billingState is BillingsLoaded) {
                       billingHistory = billingState.bills;
                       if (billingHistory == null || billingHistory!.isEmpty) {
-                        return buildErrorWidget(
-                          context: context,
+                        return ErrorView(
                           message: "No billing data available for this tenant.",
                           onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
                         );
                       }
 
-                      electricityReadings =
-                          billingHistory!.map((bill) {
-                            return Reading(
-                              id: bill.id,
-                              prevReading: bill.prevReading,
-                              currReading: bill.currReading,
-                              consumption: bill.consumption,
-                              createdAt: bill.createdAt,
-                            );
-                          }).toList();
+                      electricityReadings = billingHistory!.map((bill) {
+                        return ConsumptionPoint(date: bill.createdAt, consumption: bill.consumption, currReading: bill.currReading);
+                      }).toList();
 
-                      _selectedYear ??=
-                          electricityReadings!.any((r) => r.createdAt.year == DateTime.now().year)
-                              ? DateTime.now().year
-                              : electricityReadings!.first.createdAt.year;
-                      final years = electricityReadings!.map((e) => e.createdAt.year).toSet().toList()..sort((a, b) => b.compareTo(a));
+                      _selectedYear ??= electricityReadings!.any((r) => r.date.year == DateTime.now().year)
+                          ? DateTime.now().year
+                          : electricityReadings!.first.date.year;
+                      final years = electricityReadings!.map((e) => e.date.year).toSet().toList()..sort((a, b) => b.compareTo(a));
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 20),
                         child: Column(
@@ -144,6 +129,8 @@ class HistoryPageState extends State<HistoryPage> {
           width: 100,
           child: CustomDropdownForm<int>(
             label: 'Year',
+            isExpanded: false,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             value: _selectedYear,
             onChanged: (year) {
               setState(() {
@@ -171,7 +158,10 @@ class HistoryPageState extends State<HistoryPage> {
         width: graphWidth,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: Padding(padding: const EdgeInsets.only(top: 5.0), child: SizedBox(width: graphWidth, child: _buildBarChart(context))),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5.0),
+            child: SizedBox(width: graphWidth, child: _buildBarChart(context)),
+          ),
         ),
       ),
     );
@@ -179,11 +169,11 @@ class HistoryPageState extends State<HistoryPage> {
 
   Widget _buildBarChart(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final filteredReadings = electricityReadings!.where((reading) => reading.createdAt.year == _selectedYear).toList();
+    final filteredReadings = electricityReadings!.where((reading) => reading.date.year == _selectedYear).toList();
 
     final completeReadings = getCompleteReadingsForYear(selectedYear: _selectedYear!, readings: electricityReadings!);
 
-    completeReadings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    completeReadings.sort((a, b) => b.date.compareTo(a.date));
 
     int maxReading = filteredReadings.isNotEmpty ? filteredReadings.map((e) => e.currReading).reduce((a, b) => a > b ? a : b) : 0;
 
@@ -252,7 +242,10 @@ class HistoryPageState extends State<HistoryPage> {
                         bill.paid ? "Paid" : "Unpaid",
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: bill.paid ? Colors.green : Colors.red),
                       ),
-                      if (bill.receiptUrl != null) ...[const SizedBox(height: 8), buildReceipt(context, tenant.name, bill)],
+                      if (bill.hasReceipt) ...[
+                        const SizedBox(height: 8),
+                        ReceiptLink(tenantName: tenant.name, receiptUrl: bill.receiptUrl, fetchSignedUrl: authBloc.authApi.signedReceiptUrl),
+                      ],
                     ],
                   ),
                 ],
@@ -274,7 +267,7 @@ class HistoryPageState extends State<HistoryPage> {
               buildBillItemWidget("Room", bill.roomCharges),
               const SizedBox(height: 8),
 
-              ...buildChargesDetails(bill.electricCharges, bill.additionalCharges ?? []),
+              ...buildChargesDetails(bill.electricCharges, bill.additionalCharges),
 
               const SizedBox(height: 12),
               const Divider(thickness: 1.2),
@@ -286,7 +279,12 @@ class HistoryPageState extends State<HistoryPage> {
           ),
         ),
       ),
-      actions: [TextButton(child: const Text("Close", style: TextStyle(fontWeight: FontWeight.bold)), onPressed: () => Navigator.of(context).pop())],
+      actions: [
+        TextButton(
+          child: const Text("Close", style: TextStyle(fontWeight: FontWeight.bold)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
 }

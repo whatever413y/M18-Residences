@@ -8,11 +8,9 @@ import 'package:m18_residences/bloc/billing/billing_event.dart';
 import 'package:m18_residences/bloc/billing/billing_state.dart';
 import 'package:m18_residences/features/billing/billing_page.dart';
 import 'package:m18_residences/features/payment/payment_page.dart';
-import 'package:m18_residences/models/billing.dart';
-import 'package:m18_residences/models/tenant.dart';
-import 'package:m18_residences/theme.dart';
-import 'package:m18_residences/utils/custom_app_bar.dart';
 import 'package:m18_residences/utils/widgets/widgets.dart';
+import 'package:m18_shared/m18_shared.dart';
+
 import '../history/history_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -55,6 +53,7 @@ class HomePageState extends State<HomePage> {
         appBar: CustomAppBar(
           title: "Welcome",
           subtitle: tenant.name,
+          centerTitle: true,
           logoutOnBack: true,
           showRefresh: true,
           onRefresh: () {
@@ -71,23 +70,18 @@ class HomePageState extends State<HomePage> {
             return BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
                 if (authState is Unauthenticated) {
-                  return buildErrorWidget(context: context, message: authState.message);
+                  return ErrorView(message: authState.message);
                 }
                 return BlocBuilder<BillingBloc, BillingState>(
                   builder: (context, billingState) {
                     if (billingState is BillingLoading) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (billingState is BillingError) {
-                      return buildErrorWidget(
-                        context: context,
-                        message: billingState.message,
-                        onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
-                      );
+                      return ErrorView(message: billingState.message, onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)));
                     } else if (billingState is BillingLoaded) {
                       bill = billingState.bill;
                       if (bill == null) {
-                        return buildErrorWidget(
-                          context: context,
+                        return ErrorView(
                           message: "No billing data available for this tenant.",
                           onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
                         );
@@ -134,7 +128,10 @@ class HomePageState extends State<HomePage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          GestureDetector(onTap: () => _navigateToPage(BillingPage()), child: buildBillCardWidget(bill!, context)),
+          GestureDetector(
+            onTap: () => _navigateToPage(BillingPage()),
+            child: buildBillCardWidget(bill!, context, totalSemanticsId: 'tenant-latest-total'),
+          ),
           SizedBox(height: isMobile ? 16 : 20),
           _buildSquareButton("Billing History", Icons.history, HistoryPage(), isMobile: isMobile),
           SizedBox(height: isMobile ? 16 : 20),
@@ -160,7 +157,11 @@ class HomePageState extends State<HomePage> {
           children: [
             Icon(icon, size: isMobile ? 40 : 50, color: Colors.blue.shade800),
             SizedBox(height: isMobile ? 8 : 10),
-            Text(text, textAlign: TextAlign.center, style: TextStyle(fontSize: isMobile ? 16 : 18, fontWeight: FontWeight.bold)),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: isMobile ? 16 : 18, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),

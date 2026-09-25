@@ -3,9 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:m18_residences/bloc/auth/auth_bloc.dart';
 import 'package:m18_residences/bloc/auth/auth_event.dart';
 import 'package:m18_residences/bloc/auth/auth_state.dart';
-import 'package:m18_residences/features/login/widgets/loading_overlay.dart';
-import 'package:m18_residences/theme.dart';
-import 'package:m18_residences/utils/custom_form_field.dart';
+import 'package:m18_shared/m18_shared.dart';
+
 import '../home/home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -130,7 +129,10 @@ class LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("Welcome", style: TextStyle(fontSize: isMobile ? 22 : 26, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
+              Text(
+                "Welcome",
+                style: TextStyle(fontSize: isMobile ? 22 : 26, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
+              ),
               SizedBox(height: isMobile ? 8 : 10),
               Text(
                 "Enter your Account ID to continue",
@@ -153,6 +155,8 @@ class LoginPageState extends State<LoginPage> {
       controller: _controller,
       labelText: 'Account ID',
       prefixIcon: const Icon(Icons.person),
+      errorMaxLines: 1,
+      semanticsId: 'tenant-account-id',
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
           return 'Please enter your Account ID';
@@ -163,17 +167,21 @@ class LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildSearchButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _searchTenant,
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          backgroundColor: Colors.blue.shade700,
-          elevation: 5,
+    return Semantics(
+      container: true,
+      identifier: 'tenant-login-submit',
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _searchTenant,
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            backgroundColor: Colors.blue.shade700,
+            elevation: 5,
+          ),
+          child: const Text('Submit', style: TextStyle(fontSize: 18, color: Colors.white)),
         ),
-        child: const Text('Submit', style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }

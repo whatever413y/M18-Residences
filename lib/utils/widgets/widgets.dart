@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:m18_residences/bloc/auth/auth_bloc.dart';
-import 'package:m18_residences/bloc/auth/auth_event.dart';
-import 'package:m18_residences/bloc/auth/auth_state.dart';
-import 'package:m18_residences/features/login/login_page.dart';
-import 'package:m18_residences/models/additional_charges.dart';
-import 'package:m18_residences/models/billing.dart';
+import 'package:m18_shared/m18_shared.dart';
 
 Widget buildBillItemWidget(String label, int amount, {bool isTotal = false}) {
   final currencyFormat = NumberFormat.currency(locale: 'en_PH', symbol: '₱', decimalDigits: 0);
@@ -47,7 +41,9 @@ Widget buildReadingItemWidget(String label, int value) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[700]), softWrap: true)),
+        Expanded(
+          child: Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[700]), softWrap: true),
+        ),
         const SizedBox(width: 8),
         Text("${numberFormat.format(value)} kWh", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
       ],
@@ -55,29 +51,10 @@ Widget buildReadingItemWidget(String label, int value) {
   );
 }
 
-Widget buildErrorWidget({required BuildContext context, required String message, VoidCallback? onRetry}) {
-  return Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(message, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
-        const SizedBox(height: 16),
-        ElevatedButton.icon(
-          onPressed:
-              onRetry ??
-              () {
-                context.read<AuthBloc>().add(LogoutRequested());
-                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => LoginPage()), (route) => false);
-              },
-          icon: const Icon(Icons.refresh),
-          label: const Text('Refresh'),
-        ),
-      ],
-    ),
-  );
-}
+/// [totalSemanticsId] tags the "Total Amount" row for browser e2e tests (`flt-semantics-identifier`).
+Widget buildBillCardWidget(Bill bill, BuildContext context, {String? totalSemanticsId}) {
+  final total = buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true);
 
-Widget buildBillCardWidget(Bill bill, BuildContext context) {
   return Card(
     elevation: 4,
     margin: EdgeInsets.symmetric(vertical: 8),
@@ -103,53 +80,9 @@ Widget buildBillCardWidget(Bill bill, BuildContext context) {
           Divider(),
           buildReadingItemWidget("Consumption", bill.consumption),
           Divider(),
-          buildBillItemWidget("Total Amount", bill.totalAmount, isTotal: true),
+          if (totalSemanticsId == null) total else Semantics(container: true, identifier: totalSemanticsId, child: total),
         ],
       ),
-    ),
-  );
-}
-
-Widget buildReceipt(BuildContext context, String tenantName, Bill bill) {
-  return Padding(
-    padding: const EdgeInsets.only(top: 8),
-    child: InkWell(
-      onTap: () {
-        if (bill.receiptUrl != null) {
-          context.read<AuthBloc>().add(FetchReceiptUrl(tenantName, bill.receiptUrl!));
-          showDialog(
-            context: context,
-            builder: (context) {
-              return Dialog(
-                child: SizedBox(
-                  child: BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      if (state is UrlLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (state is UrlLoaded) {
-                        return InteractiveViewer(
-                          child: Image.network(
-                            state.url,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Padding(padding: EdgeInsets.all(20), child: Text('Failed to load image'));
-                            },
-                          ),
-                        );
-                      } else if (state is UrlError) {
-                        return Center(child: Text('Error loading receipt: ${state.message}'));
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    },
-                  ),
-                ),
-              );
-            },
-          );
-        }
-      },
-      child: Text(Uri.parse(bill.receiptUrl!).pathSegments.last, style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline)),
     ),
   );
 }
@@ -207,7 +140,12 @@ Widget buildChargeRow(String description, String amount) {
     padding: const EdgeInsets.symmetric(vertical: 2),
     child: Row(
       children: [
-        Expanded(child: Text(description.isNotEmpty ? description : '-', style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey))),
+        Expanded(
+          child: Text(
+            description.isNotEmpty ? description : '-',
+            style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+          ),
+        ),
         Text(amount),
       ],
     ),
