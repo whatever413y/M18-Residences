@@ -6,7 +6,8 @@
 *.swp
 .buildlog/
 .history
-assets/.env
+.env
+pubspec_overrides.yaml
 
 
 # Flutter repo-specific

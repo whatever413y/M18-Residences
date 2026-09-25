@@ -1,0 +1,23 @@
+name: test
+
+on:
+  push:
+    branches: [main, update]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable # latest stable Flutter
+          cache: true
+      - run: flutter pub get # resolves m18_shared from its pinned git tag
+      - run: dart format --output=none --set-exit-if-changed lib
+      - run: flutter analyze
+      - run: if [ -d test ]; then flutter test; fi
+      - name: Compile check (release web build)
+        run: flutter build web --release --dart-define=API_URL=http://localhost:50000/api

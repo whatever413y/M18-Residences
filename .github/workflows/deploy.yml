@@ -1,0 +1,33 @@
+name: Deploy Flutter Web to GitHub Pages
+
+# Lives on main too, but only runs for pushes to production (production = a merge of main).
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Flutter (latest stable)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build web
+        run: flutter build web --release --dart-define=API_URL=${{ secrets.API_URL }} --base-href="/M18-Residences/#/"
+
+      # Publishes with a .nojekyll file (the previous `disable_nojekyll: true` turned Jekyll processing on).
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.PERSONAL_TOKEN }}
+          publish_dir: ./build/web

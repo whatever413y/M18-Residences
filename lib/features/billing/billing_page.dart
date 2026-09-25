@@ -7,11 +7,8 @@ import 'package:m18_residences/bloc/auth/auth_state.dart';
 import 'package:m18_residences/bloc/billing/billing_bloc.dart';
 import 'package:m18_residences/bloc/billing/billing_event.dart';
 import 'package:m18_residences/bloc/billing/billing_state.dart';
-import 'package:m18_residences/models/billing.dart';
-import 'package:m18_residences/models/tenant.dart';
-import 'package:m18_residences/theme.dart';
-import 'package:m18_residences/utils/custom_app_bar.dart';
 import 'package:m18_residences/utils/widgets/widgets.dart';
+import 'package:m18_shared/m18_shared.dart';
 
 class BillingPage extends StatefulWidget {
   @override
@@ -44,6 +41,7 @@ class BillingPageState extends State<BillingPage> {
         appBar: CustomAppBar(
           title: "Billing Statement",
           subtitle: tenant.name,
+          centerTitle: true,
           showRefresh: true,
           onRefresh: () {
             billingBloc.add(FetchBillingByTenantId(tenant.id));
@@ -58,9 +56,7 @@ class BillingPageState extends State<BillingPage> {
             return BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
                 if (authState is Unauthenticated) {
-                  return buildErrorWidget(context: context, message: authState.message);
-                } else if (authState is UrlError) {
-                  return buildErrorWidget(context: context, message: authState.message);
+                  return ErrorView(message: authState.message);
                 }
 
                 return BlocBuilder<BillingBloc, BillingState>(
@@ -68,16 +64,11 @@ class BillingPageState extends State<BillingPage> {
                     if (billingState is BillingLoading) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (billingState is BillingError) {
-                      return buildErrorWidget(
-                        context: context,
-                        message: billingState.message,
-                        onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
-                      );
+                      return ErrorView(message: billingState.message, onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)));
                     } else if (billingState is BillingLoaded) {
                       bill = billingState.bill;
                       if (bill == null) {
-                        return buildErrorWidget(
-                          context: context,
+                        return ErrorView(
                           message: "No billing data available for this tenant.",
                           onRetry: () => billingBloc.add(FetchBillingByTenantId(tenant.id)),
                         );
@@ -119,7 +110,10 @@ class BillingPageState extends State<BillingPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Latest Bill", style: TextStyle(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
+                Text(
+                  "Latest Bill",
+                  style: TextStyle(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
+                ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -127,7 +121,10 @@ class BillingPageState extends State<BillingPage> {
                       bill.paid ? "Paid" : "Unpaid",
                       style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.w600, color: bill.paid ? Colors.green : Colors.red),
                     ),
-                    if (bill.receiptUrl != null) ...[const SizedBox(height: 8), buildReceipt(context, tenant.name, bill)],
+                    if (bill.hasReceipt) ...[
+                      const SizedBox(height: 8),
+                      ReceiptLink(tenantName: tenant.name, receiptUrl: bill.receiptUrl, fetchSignedUrl: authBloc.authApi.signedReceiptUrl),
+                    ],
                   ],
                 ),
               ],
@@ -143,7 +140,7 @@ class BillingPageState extends State<BillingPage> {
 
             buildBillItemWidget("Room", bill.roomCharges),
 
-            ...buildChargesDetails(bill.electricCharges, bill.additionalCharges ?? []),
+            ...buildChargesDetails(bill.electricCharges, bill.additionalCharges),
 
             Divider(thickness: 1.2),
 

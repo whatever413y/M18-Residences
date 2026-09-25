@@ -1,10 +1,18 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:m18_residences/models/reading.dart';
+
+/// One bar of the chart: a bill's posting date with its reading's consumption and current meter value.
+class ConsumptionPoint {
+  final DateTime date;
+  final int consumption;
+  final int currReading;
+
+  const ConsumptionPoint({required this.date, required this.consumption, required this.currReading});
+}
 
 class ElectricConsumptionBarChart extends StatelessWidget {
-  final List<Reading> completeReadings;
+  final List<ConsumptionPoint> completeReadings;
   final int yMax;
   final double barWidth;
 
@@ -19,24 +27,23 @@ class ElectricConsumptionBarChart extends StatelessWidget {
       BarChartData(
         maxY: yMax.toDouble(),
         minY: 0,
-        barGroups:
-            reversedReadings.asMap().entries.map((entry) {
-              int index = entry.key;
-              int value = entry.value.consumption;
+        barGroups: reversedReadings.asMap().entries.map((entry) {
+          int index = entry.key;
+          int value = entry.value.consumption;
 
-              return BarChartGroupData(
-                x: index,
-                barRods: [
-                  BarChartRodData(
-                    toY: value.toDouble(),
-                    color: Colors.blue,
-                    width: barWidth,
-                    borderRadius: BorderRadius.circular(4),
-                    backDrawRodData: BackgroundBarChartRodData(show: true, toY: yMax.toDouble(), color: Colors.grey.withAlpha(50)),
-                  ),
-                ],
-              );
-            }).toList(),
+          return BarChartGroupData(
+            x: index,
+            barRods: [
+              BarChartRodData(
+                toY: value.toDouble(),
+                color: Colors.blue,
+                width: barWidth,
+                borderRadius: BorderRadius.circular(4),
+                backDrawRodData: BackgroundBarChartRodData(show: true, toY: yMax.toDouble(), color: Colors.grey.withAlpha(50)),
+              ),
+            ],
+          );
+        }).toList(),
         titlesData: FlTitlesData(
           topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -54,7 +61,7 @@ class ElectricConsumptionBarChart extends StatelessWidget {
               getTitlesWidget: (value, meta) {
                 int index = value.toInt();
                 if (index >= 0 && index < reversedReadings.length) {
-                  DateTime date = reversedReadings[index].createdAt;
+                  DateTime date = reversedReadings[index].date;
                   return Text(DateFormat("MMM").format(date).toUpperCase());
                 }
                 return Text('');

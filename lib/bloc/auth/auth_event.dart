@@ -17,16 +17,3 @@ class LoginWithAccountId extends AuthEvent {
 }
 
 class LogoutRequested extends AuthEvent {}
-
-class FetchReceiptUrl extends AuthEvent {
-  final String tenantName;
-  final String filename;
-
-  FetchReceiptUrl(this.tenantName, this.filename);
-}
-
-class FetchPaymentImageUrl extends AuthEvent {
-  final String filename;
-
-  FetchPaymentImageUrl(this.filename);
-}
