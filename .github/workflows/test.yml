@@ -15,7 +15,7 @@ jobs:
         with:
           channel: stable # latest stable Flutter
           cache: true
-      - run: flutter pub get # resolves m18_shared from its pinned git tag
+      - run: flutter pub get # resolves m18_residences_shared from its pinned git tag
       - run: dart format --output=none --set-exit-if-changed lib
       - run: flutter analyze
       - run: if [ -d test ]; then flutter test; fi

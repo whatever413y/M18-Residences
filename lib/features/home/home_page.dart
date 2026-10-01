@@ -9,7 +9,7 @@ import 'package:m18_residences/bloc/billing/billing_state.dart';
 import 'package:m18_residences/features/billing/billing_page.dart';
 import 'package:m18_residences/features/payment/payment_page.dart';
 import 'package:m18_residences/utils/widgets/widgets.dart';
-import 'package:m18_shared/m18_shared.dart';
+import 'package:m18_residences_shared/m18_residences_shared.dart';
 
 import '../history/history_page.dart';
 

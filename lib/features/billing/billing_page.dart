@@ -8,7 +8,7 @@ import 'package:m18_residences/bloc/billing/billing_bloc.dart';
 import 'package:m18_residences/bloc/billing/billing_event.dart';
 import 'package:m18_residences/bloc/billing/billing_state.dart';
 import 'package:m18_residences/utils/widgets/widgets.dart';
-import 'package:m18_shared/m18_shared.dart';
+import 'package:m18_residences_shared/m18_residences_shared.dart';
 
 class BillingPage extends StatefulWidget {
   @override

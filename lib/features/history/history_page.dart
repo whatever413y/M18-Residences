@@ -9,7 +9,7 @@ import 'package:m18_residences/bloc/billing/billing_event.dart';
 import 'package:m18_residences/bloc/billing/billing_state.dart';
 import 'package:m18_residences/features/history/widgets/electric_consumption_bar_chart.dart';
 import 'package:m18_residences/utils/widgets/widgets.dart';
-import 'package:m18_shared/m18_shared.dart';
+import 'package:m18_residences_shared/m18_residences_shared.dart';
 
 class HistoryPage extends StatefulWidget {
   @override
