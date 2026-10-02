@@ -1,33 +1,33 @@
-name: Deploy Flutter Web to GitHub Pages
+# main is production: every push is checked, run through the browser e2e suite against the server and the other app
+# as they are live, and only then deployed (https://my.m18-residences.workers.dev).
+name: Deploy
 
-# Lives on main too, but only runs for pushes to production (production = a merge of main).
 on:
   push:
-    branches:
-      - production
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  check:
+    uses: whatever413y/.github/.github/workflows/flutter-web-app-check.yml@v1
 
-    steps:
-      - uses: actions/checkout@v7
+  e2e:
+    needs: check
+    uses: whatever413y/shared-e2e/.github/workflows/m18-residences.yml@main
+    with:
+      server_ref: live
+      tenant_ref: ${{ github.sha }}
+      admin_ref: live
+      pinned: true
 
-      - name: Set up Flutter (latest stable)
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build web
-        run: flutter build web --release --dart-define=API_URL=${{ secrets.API_URL }} --base-href="/M18-Residences/#/"
-
-      # Publishes with a .nojekyll file (the previous `disable_nojekyll: true` turned Jekyll processing on).
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          personal_token: ${{ secrets.PERSONAL_TOKEN }}
-          publish_dir: ./build/web
+  deploy:
+    needs: e2e
+    permissions:
+      contents: write
+    uses: whatever413y/.github/.github/workflows/workers-deploy-web.yml@v1
+    with:
+      site-url: https://my.m18-residences.workers.dev
