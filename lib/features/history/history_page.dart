@@ -244,7 +244,7 @@ class HistoryPageState extends State<HistoryPage> {
                       ),
                       if (bill.hasReceipt) ...[
                         const SizedBox(height: 8),
-                        ReceiptLink(tenantName: tenant.name, receiptUrl: bill.receiptUrl, fetchSignedUrl: authBloc.authApi.signedReceiptUrl),
+                        ReceiptLink(tenantName: tenant.name, receiptUrl: bill.receiptUrl, fetchSignedFile: authBloc.authApi.signedReceiptUrl),
                       ],
                     ],
                   ),

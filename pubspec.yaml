@@ -36,7 +36,7 @@ dependencies:
     git:
       url: https://github.com/whatever413y/shared-packages.git
       path: packages/m18_residences_shared
-      ref: m18_residences_shared-v0.2.0
+      ref: m18_residences_shared-v0.3.0
   fl_chart: ^1.0.0
   intl: ^0.20.2
   collection: ^1.18.0

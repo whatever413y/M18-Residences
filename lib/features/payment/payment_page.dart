@@ -55,7 +55,7 @@ class PaymentPageState extends State<PaymentPage> {
 
   Widget _buildPaymentCard(BuildContext context, String name, String iconPath) {
     return InkWell(
-      onTap: () => SignedImageDialog.show(context, fetchUrl: () => authBloc.authApi.signedPaymentUrl(name.toLowerCase()), subject: 'image'),
+      onTap: () => SignedImageDialog.show(context, fetchFile: () => authBloc.authApi.signedPaymentUrl(name.toLowerCase()), subject: 'image'),
       borderRadius: BorderRadius.circular(12),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

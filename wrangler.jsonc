@@ -1,0 +1,11 @@
+// Static hosting on Cloudflare Workers: the Flutter web build, no Worker script.
+// Build first: flutter build web --release --dart-define=API_URL=<api url> (base href "/").
+{
+  "name": "m18-residences-tenant",
+  "compatibility_date": "2026-09-29",
+  "assets": {
+    "directory": "./build/web",
+    // Unknown paths serve index.html (the app routes with URL fragments anyway).
+    "not_found_handling": "single-page-application"
+  }
+}
