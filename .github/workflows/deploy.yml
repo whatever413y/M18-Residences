@@ -29,5 +29,7 @@ jobs:
     permissions:
       contents: write
     uses: whatever413y/.github/.github/workflows/workers-deploy-web.yml@v1
+    # Cross-repo reusable workflows only see the caller's (environment) secrets when they are passed on.
+    secrets: inherit
     with:
       site-url: https://my.m18-residences.workers.dev
