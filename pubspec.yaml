@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   # Models, API client and widgets shared with the admin app. For local work, pubspec_overrides.yaml
   # (gitignored) points this at ../shared-packages/packages/m18_residences_shared.
   m18_residences_shared:

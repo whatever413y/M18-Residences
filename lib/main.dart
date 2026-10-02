@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:m18_residences/bloc/auth/auth_bloc.dart';
 import 'package:m18_residences/bloc/auth/auth_event.dart';
 import 'package:m18_residences/bloc/billing/billing_bloc.dart';
@@ -9,6 +10,12 @@ import 'package:m18_residences_shared/m18_residences_shared.dart';
 import 'features/login/login_page.dart';
 
 void main() {
+  // The link the tenant opened, read before Flutter's router rewrites the address bar (it drops an old `#/NAME`).
+  LoginPage.launchUrl = Uri.base;
+  // Plain paths (https://my.m18-residences.workers.dev/NAME) instead of `#/` URLs; the Worker serving the app
+  // answers every path with index.html.
+  usePathUrlStrategy();
+
   // Throws a clear StateError at startup, rather than on the first request, when the build has no API_URL
   // (build/run with --dart-define-from-file=.env).
   ApiConfig.baseUrl;

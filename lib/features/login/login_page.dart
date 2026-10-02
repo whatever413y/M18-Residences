@@ -8,6 +8,9 @@ import 'package:m18_residences_shared/m18_residences_shared.dart';
 import '../home/home_page.dart';
 
 class LoginPage extends StatefulWidget {
+  /// The URL the app was opened with (set in `main` before the router can rewrite it).
+  static Uri? launchUrl;
+
   @override
   LoginPageState createState() => LoginPageState();
 }
@@ -21,20 +24,8 @@ class LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    final uri = Uri.base;
-
-    String? accountId;
-
-    if (uri.fragment.isNotEmpty) {
-      final fragUri = Uri.parse(uri.fragment);
-      if (fragUri.pathSegments.isNotEmpty) {
-        accountId = fragUri.pathSegments.last;
-      }
-    }
-
-    if (accountId != null && accountId.isNotEmpty) {
-      _controller.text = accountId;
-    }
+    final accountId = accountIdFromUrl(LoginPage.launchUrl ?? Uri.base);
+    if (accountId != null) _controller.text = accountId;
   }
 
   void _searchTenant() {
@@ -185,4 +176,15 @@ class LoginPageState extends State<LoginPage> {
       ),
     );
   }
+}
+
+/// The account ID a tenant link carries: the last path segment (`…/NAME`), or for links shared before the
+/// move to path URLs, the last segment of the fragment (`…/#/NAME`).
+String? accountIdFromUrl(Uri url) {
+  String? lastSegment(List<String> segments) => segments.where((s) => s.trim().isNotEmpty).lastOrNull;
+  if (url.fragment.isNotEmpty) {
+    final fromFragment = lastSegment(Uri.parse(url.fragment).pathSegments);
+    if (fromFragment != null) return fromFragment;
+  }
+  return lastSegment(url.pathSegments);
 }
