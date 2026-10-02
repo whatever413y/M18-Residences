@@ -123,7 +123,10 @@ class BillingPageState extends State<BillingPage> {
                     ),
                     if (bill.hasReceipt) ...[
                       const SizedBox(height: 8),
-                      ReceiptLink(tenantName: tenant.name, receiptUrl: bill.receiptUrl, fetchSignedFile: authBloc.authApi.signedReceiptUrl),
+                      Semantics(
+                        identifier: 'tenant-receipt-link',
+                        child: ReceiptLink(tenantName: tenant.name, receiptUrl: bill.receiptUrl, fetchSignedFile: authBloc.authApi.signedReceiptUrl),
+                      ),
                     ],
                   ],
                 ),
